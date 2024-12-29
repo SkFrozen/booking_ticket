@@ -1,0 +1,26 @@
+<ul class="nav nav-pills bg-dark p-3 fs-5 justify-content-end align-items-center">
+    <li class="nav-item me-3">
+        <a href="/" class="nav-link link-light hover-overlay"> home </a>
+    </li>
+    
+    {% if user.is_authenticated %}
+    <li class="nav-item me-3">
+        <a href="{% url 'profile' %}" class="nav-link link-light"> profile </a>
+    </li>
+    <li class="nav-item me-3">
+        <form action="{% url 'logout' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                Выйти
+            </button>
+        </form>
+    </li>
+    {% else %}
+    <li class="nav-item me-3">
+        <a href="{% url 'login' %}" class="nav-link link-light">Войти</a>
+    </li>
+    <li class="nav-item me-3">
+        <a href="{% url 'register' %}" class="nav-link link-light">Регистрация</a>
+    </li>
+    {% endif %}
+</ul>
