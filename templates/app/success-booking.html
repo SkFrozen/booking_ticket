@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load filters %}
+{% block title %}Booking{% endblock title %}
+
+{% block content %}
+
+<div class="container text-center">
+    {% if info_book %}
+    <h1>You have booked seats</h1>
+    <div class="container">
+        <p>Total price: {{ info_book.total_price }}</p>
+        <p>Total seats: {{ info_book.total_seats }}</p>
+    </div>
+    <div class="container d-flex w-25 justify-content-evenly">
+        <a href="{% url 'profile' %}" class="btn btn-primary">To profile</a>
+        <a href="{% url 'directions' %}" class="btn btn-primary">To home</a>
+    </div>
+    {% elif msg %}
+    <h2>{{ msg }}</h2>
+    {% endif %}
+    <a href="{% url 'profile' %}" class="btn btn-primary">To profile</a>
+</div>
+
+{% endblock %}

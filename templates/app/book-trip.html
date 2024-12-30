@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load filters %}
+{% block title %}Booking{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+    <h1> Seats chart: {{trip.town_from}} - {{ trip.town_to }} </h1>
+    <div class="container trip-chart" data-trip="{{ trip.id }}">
+        {% for row in seats|split_list:5 %}
+        <div class="container">
+            {% for seat in row %}
+            <button type="button" class="col-1 seat border mb-4 me-4 btn{% if seat.is_booked %} bg-danger disabled {% endif %} bg-success">
+                <div class="text-center text-light" data-seat="{{ seat.id }}">
+                    {{ seat.number }}
+                </div>
+            </button>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <a href="{% url 'book_seat' trip.id %}" type="button" class="btn btn-primary book-trip">Book</a>
+    </div>
+</div>
+<script>
+    const bookButton = document.querySelector(".book-trip");
+    document.querySelectorAll(".seat").forEach(function(element) {
+        element.addEventListener("click", function(){
+            element.classList.toggle("bg-secondary");
+            element.classList.toggle("booked");
+            element.classList.toggle("bg-success");
+        });
+    });
+
+    bookButton.addEventListener("click", function(element) {
+        const bookedSeats = document.querySelectorAll(".booked");
+        const seats = [];
+
+        bookedSeats.forEach(function(e){
+            seats.push(e.children[0].getAttribute("data-seat"))
+        });
+        if (seats.length > 0){
+            const currentUrl = window.location.origin + element.target.getAttribute("href");
+            url = new URL(currentUrl);
+            seats.forEach(function(seat) {
+                url.searchParams.append("seat", seat);
+            })
+            element.target.setAttribute("href", url);
+        } else {
+            element.preventDefault()
+        };
+        
+    });
+</script>
+{% endblock content %}

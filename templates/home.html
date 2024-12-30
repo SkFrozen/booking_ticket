@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+
+<h1 class='text-center mt-3 mb-5'>Airline Tickets</h1>
+<div class="container d-flex justify-content-around">
+    {% for country in countries  %}
+    <div class="container bd-highlight w-25">
+        <div class="img">
+            <img src="https://lh5.googleusercontent.com/p/AF1QipPh0HcRZQgDcMRt3DwCIG3Cx5hu_nhbTPflOf-b=w540-h312-n-k-no" alt="img-fluid" class="img-thumbnail">
+        </div>
+        <a href="{% url 'trips_list_by_direction' direction=country.id %}">{{ country.name }}</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock content %}

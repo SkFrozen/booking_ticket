@@ -6,9 +6,36 @@
 
 <div class="container">
     <h1 class="text-center">Profile page {{ user.username }}</h1>
-    
+    <h2 class="text-center">Booking</h2>
     <div>
-        Common user profile
+        {% for booking in bookings %}
+        <div class="container w-25 m-auto mt-3 p-2 border bg-light">
+            <p>
+                Flight: {{ booking.trip.town_from }} {{ booking.trip.airport }} - {{ booking.trip.town_to }}
+            </p>
+            <p>
+                Date out: {{ booking.trip.time_out }}
+            </p>
+            <p>
+                Date in: {{ booking.trip.time_in }}
+            </p>
+            <p>
+                Seat number: {{ booking.seat.number }}
+            </p>
+            <p>
+                Seat price: {{ booking.seat.price }}
+            </p>
+            <p>
+                Paid: {{ booking.paid }}
+            </p>
+            {% if not booking.paid %}
+            <div class="container d-flex justify-content-evenly">
+                <a href="#" class="btn btn-danger w-25">Reject</a>
+                <a href="{% url 'payment' booking.id %}" class="btn btn-success w-50">Pay</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
 </div>
 

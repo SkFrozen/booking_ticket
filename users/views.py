@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render
 
+from app.models import Booking
 from users.models import User
 
 from .forms import UserForm
@@ -12,7 +13,6 @@ def register_view(request):
         form = UserForm(request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
-            print(cleaned_data)
             user = User.objects.create_user(**cleaned_data)
             return redirect("login")
 
@@ -20,4 +20,9 @@ def register_view(request):
 
 
 def profile_view(request):
-    return render(request, "registration/profile.html")
+    bookings = (
+        Booking.objects.filter(user=request.user)
+        .select_related("seat")
+        .select_related("trip")
+    )
+    return render(request, "registration/profile.html", {"bookings": bookings})
