@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .forms import SeatCreateForm, SeatUpdateForm
 from .models import Company, Country, Seat, Trip
 
 
@@ -16,7 +17,7 @@ class HasSeatsFilter(admin.SimpleListFilter):
             .distinct()
             .values("id", "town_from", "town_to")
         )
-        lookup = ((obj["id"], f"{obj["town_from"]} - {obj["town_to"]}") for obj in qs)
+        lookup = ((obj["id"], f"{obj["id"]}: {obj["town_from"]} - {obj["town_to"]}") for obj in qs)
         return lookup
 
     def queryset(self, request, queryset):
@@ -40,7 +41,7 @@ class TripAdmin(admin.ModelAdmin):
     )
     list_filter = ("company", "country", "airport", "town_from")
     list_per_page = 50
-    search_field = ("id", "time_out", "time_in", "plane")
+    search_fields = ("id", "time_out", "time_in", "plane", "town_to")
 
 
 @admin.register(Seat)
@@ -57,6 +58,20 @@ class SeatAdmin(admin.ModelAdmin):
     search_fields = ("number", "price")
     ordering = ("trip",)
     actions = ("mark_as_booked",)
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            super().save_model(request, obj, form, change)
+        else:
+            amount = form.cleaned_data.pop("amount")
+            objs = [Seat(**form.cleaned_data, number=k+1) for k in range(amount)]
+            Seat.objects.bulk_create(objs)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            return SeatCreateForm
+        return SeatUpdateForm
+        
 
     def get_queryset(self, request):
         seats = Seat.objects.all().select_related("trip")

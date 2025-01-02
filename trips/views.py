@@ -1,11 +1,7 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Min
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
-from django.views.generic import FormView
+from django.shortcuts import render
 
-from .forms import CreateSeatsForm
 from .models import Trip
 
 
@@ -36,28 +32,3 @@ def trip_list_by_town_view(request, town_to):
     page_obj = paginator.get_page(page)
 
     return render(request, "trips/trip-list.html", {"page_obj": page_obj})
-
-
-class CreateSeatsView(PermissionRequiredMixin, FormView):
-    """
-    View for creating seats by the admin
-    """
-
-    template_name = "trips/create-seats.html"
-    form_class = CreateSeatsForm
-    permission_required = ["user.is_superuser"]
-
-    def post(self, request):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            count = form.cleaned_data["seats"]
-            price = form.cleaned_data["price"]
-            trip = form.cleaned_data["trip"]
-
-            if trip.seats.exists():
-                return HttpResponse("Already have seats")
-
-            trip.create_seats(count, price)
-            return redirect("create_seats")
-        else:
-            return render(request, self.template_name, {"form": form})

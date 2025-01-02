@@ -5,6 +5,7 @@ from .views import (
     booking_seat_view,
     booking_seats_chart_view,
     payment_view,
+    reject_booking_view,
 )
 
 urlpatterns = [
@@ -15,5 +16,6 @@ urlpatterns = [
         booking_seat_view,
         name="book_seat",
     ),
-    path("payment/<int:booking_id>", payment_view, name="payment"),
+    path("booking/payment/<int:booking_id>", payment_view, name="payment"),
+    path("booking/reject/<int:booking_id>", reject_booking_view, name="reject"),
 ]

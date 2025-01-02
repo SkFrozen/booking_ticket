@@ -1,5 +1,3 @@
-import random
-
 from django.db import models
 
 
@@ -48,10 +46,6 @@ class Trip(models.Model):
     def free_seats_count(self):
         return self.seats.filter(is_booked=False).count()
 
-    def create_seats(self, count, price):
-        for i in range(count):
-            Seat.objects.create(number=f"{i + 1}", price=price, trip=self)
-
 
 class Seat(models.Model):
     number = models.CharField(max_length=10)
@@ -62,3 +56,6 @@ class Seat(models.Model):
     @property
     def count(self):
         return Seat.objects.filter(trip=self.trip).count()
+
+    def __str__(self):
+        return f"Trip: {self.trip.id}. Number: {self.number}"

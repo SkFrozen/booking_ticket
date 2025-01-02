@@ -14,8 +14,11 @@ class BookingAdmin(admin.ModelAdmin):
         "updated_at",
     )
     list_filter = ("paid",)
+    search_fields = ("id", "user__username", "created_at")
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("id", "booking", "user", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("id", "user__username", "created_at")

@@ -18,6 +18,9 @@ class Booking(models.Model):
         db_table = "booking"
         ordering = ["-created_at"]
 
+    def __str__(self):
+        return f"User: {self.user.username}. Trip: {self.trip}"
+
 
 class Payment(models.Model):
     booking = models.ForeignKey(
@@ -29,3 +32,6 @@ class Payment(models.Model):
     class Meta:
         db_table = "payments"
         ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"User: {self.user.username}. Seat: {self.booking.seat}"

@@ -45,6 +45,14 @@ def payment_view(request, booking_id):
         return render(request, "app/success-booking.html", {"msg": msg})
 
 
+def reject_booking_view(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    booking.seat.is_booked = False
+    booking.seat.save()
+    booking.delete()
+    return redirect("profile")
+
+
 class DirectionsView(ListView):
     model = Country
     template_name = "home.html"

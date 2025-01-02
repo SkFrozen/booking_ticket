@@ -30,7 +30,7 @@
             </p>
             {% if not booking.paid %}
             <div class="container d-flex justify-content-evenly">
-                <a href="#" class="btn btn-danger w-25">Reject</a>
+                <a href="{% url 'reject' booking.id %}" class="btn btn-danger w-25">Reject</a>
                 <a href="{% url 'payment' booking.id %}" class="btn btn-success w-50">Pay</a>
             </div>
             {% endif %}

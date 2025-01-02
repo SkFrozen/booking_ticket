@@ -1,9 +1,17 @@
 from django import forms
 
-from .models import Trip
+from .models import Seat
 
 
-class CreateSeatsForm(forms.Form):
-    seats = forms.IntegerField(label="Seats", min_value=1)
-    price = forms.IntegerField(label="Price", min_value=1)
-    trip = forms.ModelChoiceField(queryset=Trip.objects.all(), label="Trip")
+class SeatCreateForm(forms.ModelForm):
+    amount = forms.IntegerField(label="Amount", min_value=1)
+
+    class Meta:
+        model = Seat
+        fields = ("amount", "price", "trip")
+
+
+class SeatUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Seat
+        fields = ("number", "price", "trip", "is_booked")
