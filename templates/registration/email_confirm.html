@@ -1,0 +1,6 @@
+{% autoescape off %}
+    <p>{{ variable }} {{ user.username }}, click on the link below to confirm registration on the website.</p>
+    <a href="httt://{{ domain }}{% url 'register_confirm' uidb64 token %}">
+        http://{{ domain }}{% url 'register_confirm' uidb64 token %}
+    </a>
+{% endautoescape %}

@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
 
@@ -6,12 +8,14 @@ from trips.models import Country, Seat, Trip
 from .models import Booking, Payment
 
 
+@login_required
 def booking_seats_chart_view(request, trip_id):
     trip = get_object_or_404(Trip, pk=trip_id)
     seats = trip.seats.all().order_by("id")
     return render(request, "app/book-trip.html", {"seats": seats, "trip": trip})
 
 
+@login_required
 def booking_seat_view(request, trip_id):
     seat_ids = request.GET.getlist("seat")
     if seat_ids is not None:
@@ -32,6 +36,7 @@ def booking_seat_view(request, trip_id):
     return redirect("booking", trip_id=trip_id)
 
 
+@login_required
 def payment_view(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     try:
@@ -45,6 +50,7 @@ def payment_view(request, booking_id):
         return render(request, "app/success-booking.html", {"msg": msg})
 
 
+@login_required
 def reject_booking_view(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     booking.seat.is_booked = False
@@ -57,3 +63,15 @@ class DirectionsView(ListView):
     model = Country
     template_name = "home.html"
     context_object_name = "countries"
+
+    def get(self, request):
+        if cache.get("countries"):
+            print("cache")
+            return render(
+                request, self.template_name, {"countries": cache.get("countries")}
+            )
+        else:
+            print("miss cache")
+            countries = Country.objects.all()
+            cache.set("countries", countries, 60 * 60)
+            return render(request, self.template_name, {"countries": countries})

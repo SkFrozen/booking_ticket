@@ -4,6 +4,9 @@
 
 {% block content %}
 <div class="container w-25">
+    {% if msg %}
+    <h2>We have sent a message to your email address to confirm registration</h2>
+    {% endif %}
     <form action="{% url 'login' %}" method="post" class="form">
         {% csrf_token %}
         {% bootstrap_form form %}

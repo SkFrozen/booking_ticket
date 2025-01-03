@@ -4,13 +4,14 @@
 
 {% block content %}
 
+<div class="container d-flex flex-column align-items-center">
 {% if page_obj %}
 <h2 class="text-center">To {{ page_obj.0.country.name}}</h2>
 <div class="row row-cols-3 w-50 m-auto">
     {% for trip in page_obj %}
     
     <div class="container">
-        <a href="{% url 'detail_trip' town_to=trip.town_to %}" class="img">
+        <a href="{% url 'detail_trip' direction=direction town_to=trip.town_to %}" class="img">
             <img src="https://lh5.googleusercontent.com/p/AF1QipPh0HcRZQgDcMRt3DwCIG3Cx5hu_nhbTPflOf-b=w540-h312-n-k-no" alt="img-fluid" class="img-thumbnail">
         </a>
         <p>{{ trip.town_to }}</p>  
@@ -30,8 +31,6 @@
     
     {% endfor %}
     
-    {% endif %}
-
 </div>
 <div class="w-25 m-auto justify-content-center pagination">
     <span class="step-links">
@@ -50,5 +49,12 @@
         {% endif %}
     </span>
 </div>
+
+{% else %}
+    <h2 class="text-center">No available flights</h2>
+    <a href="{% url 'trips_list_by_direction' direction %}" class="btn btn-primary">Back</a>
+</div>
+
+{% endif %}
 
 {% endblock content %}

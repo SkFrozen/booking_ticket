@@ -14,7 +14,12 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from django.conf.global_settings import DATE_FORMAT, DATETIME_FORMAT
+from django.conf.global_settings import (
+    DATE_FORMAT,
+    DATETIME_FORMAT,
+    DEFAULT_FROM_EMAIL,
+    SESSION_ENGINE,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -117,6 +122,18 @@ else:
         }
     }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+REDIS_USERNAME = os.getenv("REDIS_USERNAME")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379",
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -163,3 +180,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery settings
+CELERY_BROKER_URL = f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379/1"
+
+# Email settings
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
