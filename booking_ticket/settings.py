@@ -11,15 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
-from datetime import timedelta
 from pathlib import Path
 
-from django.conf.global_settings import (
-    DATE_FORMAT,
-    DATETIME_FORMAT,
-    DEFAULT_FROM_EMAIL,
-    SESSION_ENGINE,
-)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -166,7 +159,7 @@ USE_I18N = False
 USE_TZ = True
 
 DATE_FORMAT = "d-m-Y"
-DATETIME_FORMAT = "%m/%d/%y %H:%M"
+DATETIME_FORMAT = "%d.%m.%y %H:%M"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

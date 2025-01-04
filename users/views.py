@@ -24,9 +24,9 @@ def register_view(request):
             user = User.objects.create_user(**cleaned_data, is_active=False)
             domain = str(get_current_site(request))
 
-            msg: bool = send_register_email_task.delay(domain, user.id)
-            # send_register_email_task.apply_async(args=[domain, user.id])
-            delete_user_task.apply_async(args=[user.id], countdown=30)
+            # send_register_email_task.delay(domain, user.id)
+            msg: bool = send_register_email_task.apply_async(args=[domain, user.id])
+            delete_user_task.apply_async(args=[user.id], countdown=60)
             return render(
                 request,
                 "registration/login.html",

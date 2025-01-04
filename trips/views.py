@@ -18,7 +18,6 @@ def trip_list_by_direction_view(request, direction):
     paginator = Paginator(trips, 6)
     page = request.GET.get("page")
     page_obj = paginator.get_page(page)
-
     return render(
         request, "trips/trip-list.html", {"page_obj": page_obj, "direction": direction}
     )

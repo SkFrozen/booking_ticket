@@ -48,7 +48,7 @@ class BaseEmailSender:
 
     def _get_user_base64(self) -> str:
         return urlsafe_base64_encode(
-            force_bytes(getattr(self._user, self.user_id_field))
+            force_bytes(str(getattr(self._user, self.user_id_field)))
         )
 
 
