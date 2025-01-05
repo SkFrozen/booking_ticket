@@ -6,6 +6,7 @@ from django.views.generic import ListView
 from trips.models import Country, Seat, Trip
 
 from .models import Booking, Payment
+from .tasks import send_ticket_to_user
 
 
 @login_required
@@ -18,7 +19,8 @@ def booking_seats_chart_view(request, trip_id):
 @login_required
 def booking_seat_view(request, trip_id):
     seat_ids = request.GET.getlist("seat")
-    if seat_ids is not None:
+
+    if seat_ids:
         seats = Seat.objects.filter(id__in=seat_ids)
         info_book = {
             "total_price": 0,
@@ -43,7 +45,8 @@ def payment_view(request, booking_id):
         payment = Payment.objects.create(booking_id=booking.id, user_id=request.user.id)
         booking.paid = True
         booking.save()
-        msg = "Thank you for your payment. We send your ticket in your email"
+        send_ticket_to_user.delay(booking.id, request.user.id)
+        msg = "Thank you for your payment. We sent your ticket in your email"
         return render(request, "app/success-booking.html", {"msg": msg})
     except Exception as e:
         msg = "Error: " + str(e) + ". Please try again"

@@ -21,6 +21,18 @@ class Booking(models.Model):
     def __str__(self):
         return f"User: {self.user.username}. Trip: {self.trip}"
 
+    def create_ticket(self):
+        ticket = {
+            "seat": self.seat.number,
+            "price": self.seat.price,
+            "town_from": self.trip.town_from,
+            "town_to": self.trip.town_to,
+            "time_out": self.trip.time_out,
+            "time_in": self.trip.time_in,
+            "airport": self.trip.airport,
+        }
+        return ticket
+
 
 class Payment(models.Model):
     booking = models.ForeignKey(
