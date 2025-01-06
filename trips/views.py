@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
 
+from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
 from django.db.models import Min
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
 from .models import Trip
 
 
-def trip_list_by_direction_view(request, direction):
+def trip_list_by_direction_view(request: WSGIRequest, direction) -> HttpResponse:
     trips = (
         Trip.objects.filter(country__id=direction)
         .distinct("town_to")
@@ -23,7 +25,9 @@ def trip_list_by_direction_view(request, direction):
     )
 
 
-def trip_list_by_town_view(request, direction, town_to):
+def trip_list_by_town_view(
+    request: WSGIRequest, direction: int, town_to: str
+) -> HttpResponse:
     date_now = timezone.now()
     date_out = timezone.make_aware(
         datetime(date_now.year, date_now.month, date_now.day)

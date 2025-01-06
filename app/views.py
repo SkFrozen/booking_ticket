@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
 
@@ -10,14 +12,16 @@ from .tasks import send_ticket_to_user
 
 
 @login_required
-def booking_seats_chart_view(request, trip_id):
+def booking_seats_chart_view(request: WSGIRequest, trip_id: int) -> HttpResponse:
     trip = get_object_or_404(Trip, pk=trip_id)
     seats = trip.seats.all().order_by("id")
     return render(request, "app/book-trip.html", {"seats": seats, "trip": trip})
 
 
 @login_required
-def booking_seat_view(request, trip_id):
+def booking_seat_view(
+    request: WSGIRequest, trip_id: int
+) -> HttpResponse | HttpResponseRedirect:
     seat_ids = request.GET.getlist("seat")
 
     if seat_ids:
@@ -39,7 +43,7 @@ def booking_seat_view(request, trip_id):
 
 
 @login_required
-def payment_view(request, booking_id):
+def payment_view(request: WSGIRequest, booking_id: id) -> HttpResponse:
     booking = get_object_or_404(Booking, pk=booking_id)
     try:
         payment = Payment.objects.create(booking_id=booking.id, user_id=request.user.id)
@@ -54,7 +58,7 @@ def payment_view(request, booking_id):
 
 
 @login_required
-def reject_booking_view(request, booking_id):
+def reject_booking_view(request: WSGIRequest, booking_id: int) -> HttpResponse:
     booking = get_object_or_404(Booking, pk=booking_id)
     booking.seat.is_booked = False
     booking.seat.save()
@@ -67,7 +71,7 @@ class DirectionsView(ListView):
     template_name = "home.html"
     context_object_name = "countries"
 
-    def get(self, request):
+    def get(self, request: WSGIRequest) -> HttpResponse:
         if cache.get("countries"):
             print("cache")
             return render(

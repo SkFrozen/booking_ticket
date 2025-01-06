@@ -14,7 +14,7 @@ from ..models import User
 class TestRegisterViews(TestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.client = Client()
         cls.url = reverse("register")
         cls.user_data = {
@@ -32,7 +32,7 @@ class TestRegisterViews(TestCase):
             is_active=False,
         )
 
-    def test_register(self):
+    def test_register(self) -> None:
         response = self.client.post(self.url, self.user_data)
         user = User.objects.get(username="test")
 
@@ -40,7 +40,7 @@ class TestRegisterViews(TestCase):
         self.assertTemplateUsed(response, "registration/login.html")
         self.assertEqual(user.is_active, False)
 
-    def test_register_invalid_data(self):
+    def test_register_invalid_data(self) -> None:
         self.user_data["username"] = ""
 
         response = self.client.post(self.url, self.user_data)
@@ -49,7 +49,7 @@ class TestRegisterViews(TestCase):
         self.assertTemplateUsed(response, "registration/register-form.html")
         self.assertFormError(response, "form", "username", "This field is required.")
 
-    def test_confirm_register_view(self):
+    def test_confirm_register_view(self) -> None:
         uidb64 = urlsafe_base64_encode(force_bytes(str(self.user.username)))
         token = default_token_generator.make_token(self.user)
         self.url = reverse("register_confirm", args=(uidb64, token))
@@ -65,7 +65,7 @@ class TestRegisterViews(TestCase):
 class TestProfileView(TestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.client = Client()
         cls.url = reverse("profile")
         cls.user = User.objects.create_user(
@@ -95,7 +95,7 @@ class TestProfileView(TestCase):
             for seat in cls.seats
         ]
 
-    def test_profile_view(self):
+    def test_profile_view(self) -> None:
         self.client.force_login(self.user)
         response = self.client.get(self.url)
 

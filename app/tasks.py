@@ -10,11 +10,12 @@ User = get_user_model()
 
 
 @shared_task
-def send_ticket_to_user(booking_id, user_id):
+def send_ticket_to_user(booking_id: int, user_id: int) -> None:
+
     try:
         booking = Booking.objects.get(id=booking_id)
         user = User.objects.get(id=user_id)
-        ticket = generate_ticket_pdf(booking.create_ticket())
+        ticket = generate_ticket_pdf(booking.ticket)
         subject = f"{user.first_name} {user.last_name}'s ticket!"
         message = f"Hello, {user.username}. You can download and print the ticket"
         send_email_task(message, user.email, subject, ticket, "ticket.pdf")
@@ -23,13 +24,16 @@ def send_ticket_to_user(booking_id, user_id):
 
 
 def send_email_task(
-    message,
-    email,
-    subject,
-    file=None,
-    file_name="file.pdf",
-    file_content="application/pdf",
-):
+    message: str,
+    email: str,
+    subject: str,
+    file: bytes | None = None,
+    file_name: str = "file.pdf",
+    file_content: str = "application/pdf",
+) -> None:
+    """
+    Send email with file attachment
+    """
     print(f"sending email '{email}', '{subject}', '{message}'")
 
     if not email or not message:

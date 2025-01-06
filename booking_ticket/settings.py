@@ -115,17 +115,24 @@ else:
         }
     }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+REDIS_CACHE = os.getenv("REDIS_CACHE")
 
-REDIS_USERNAME = os.getenv("REDIS_USERNAME")
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+if REDIS_CACHE:
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379",
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_CACHE,
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 
 # Password validation
@@ -175,8 +182,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Celery settings
-CELERY_BROKER_URL = f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_USERNAME}:{REDIS_PASSWORD}@127.0.0.1:6379/1"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 # Email settings
 EMAIL_HOST = "smtp.yandex.ru"

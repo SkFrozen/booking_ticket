@@ -7,13 +7,13 @@ User = get_user_model()
 
 
 @shared_task(ignore_result=True)
-def delete_user_task(user_id: int):
+def delete_user_task(user_id: int) -> None:
     print("task: delete_user()=", user_id)
     User.objects.filter(id=user_id, is_active=False).delete()
 
 
 @shared_task(max_retries=3, autoretry_for=(Exception,))
-def send_register_email_task(domain: str, user_id: int):
+def send_register_email_task(domain: str, user_id: int) -> bool:
     print("task: send_register_email()=", domain, user_id)
     try:
         user = User.objects.get(id=user_id)

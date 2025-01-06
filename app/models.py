@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -18,10 +20,11 @@ class Booking(models.Model):
         db_table = "booking"
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User: {self.user.username}. Trip: {self.trip}"
 
-    def create_ticket(self):
+    @property
+    def ticket(self) -> dict[str, Any]:
         ticket = {
             "seat": self.seat.number,
             "price": self.seat.price,
@@ -45,5 +48,5 @@ class Payment(models.Model):
         db_table = "payments"
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User: {self.user.username}. Seat: {self.booking.seat}"

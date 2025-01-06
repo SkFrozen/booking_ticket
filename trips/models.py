@@ -8,7 +8,7 @@ class Company(models.Model):
         db_table = "companies"
         verbose_name_plural = "companies"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -19,7 +19,7 @@ class Country(models.Model):
         db_table = "countries"
         verbose_name_plural = "countries"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -39,11 +39,11 @@ class Trip(models.Model):
         db_table = "trips"
         verbose_name_plural = "trips"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.id}: {self.town_from} - {self.town_to}"
 
     @property
-    def free_seats_count(self):
+    def free_seats_count(self) -> int:
         return self.seats.filter(is_booked=False).count()
 
 
@@ -54,8 +54,8 @@ class Seat(models.Model):
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="seats")
 
     @property
-    def count(self):
+    def count(self) -> int:
         return Seat.objects.filter(trip=self.trip).count()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Trip: {self.trip.id}. Number: {self.number}"

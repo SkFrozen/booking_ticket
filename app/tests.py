@@ -13,7 +13,7 @@ from .models import Booking, Payment
 class TestBookingView(TestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.client = Client()
         cls.user = User.objects.create_user(
             username="test_user",
@@ -49,13 +49,13 @@ class TestBookingView(TestCase):
             for i in range(1, 101)
         ]
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.trip_id = self.trip[randint(0, 1)].id
         self.booked_seats = Seat.objects.filter(trip_id=self.trip_id).order_by("id")
         self.url = reverse("booking", args=[self.trip_id])
         self.client.force_login(self.user)
 
-    def test_booking_seats_chart(self):
+    def test_booking_seats_chart(self) -> None:
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
@@ -66,7 +66,7 @@ class TestBookingView(TestCase):
             seats, response.context["seats"], ordered=True, msg="Seats are not equal"
         )
 
-    def test_booking_seat(self):
+    def test_booking_seat(self) -> None:
         self.url = reverse("book_seat", args=[self.trip_id])
         seats_id = [seat.id for seat in self.booked_seats][0:3]
         response = self.client.get(self.url, data={"seat": seats_id})
@@ -86,7 +86,7 @@ class TestBookingView(TestCase):
         self.assertEqual(len(seats), total_seats)
         self.assertEqual(900, total_price)
 
-    def test_seats_is_none(self):
+    def test_seats_is_none(self) -> None:
         self.url = reverse("book_seat", args=[self.trip_id])
         response = self.client.get(self.url)
 
@@ -96,7 +96,7 @@ class TestBookingView(TestCase):
 class TestPaymentView(TestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.client = Client()
         cls.user = User.objects.create_user(
             username="test_user",
@@ -134,12 +134,12 @@ class TestPaymentView(TestCase):
             for seat in cls.seats
         ]
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.booking_id = self.booking[randint(0, 3)].id
         self.url = reverse("payment", args=[self.booking_id])
         self.client.force_login(self.user)
 
-    def test_payment(self):
+    def test_payment(self) -> None:
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)

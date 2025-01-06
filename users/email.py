@@ -26,7 +26,7 @@ class BaseEmailSender:
             raise NotImplementedError("subject is not defined")
         return self.subject
 
-    def send_mail(self):
+    def send_mail(self) -> None:
         mail = EmailMultiAlternatives(
             subject=self.get_subject() + " on site " + self._domain,
             to=[self._user.email],

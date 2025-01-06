@@ -12,7 +12,7 @@ from .models import Company, Country, Trip
 class TestTripViews(TestCase):
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.client = Client()
         cls.company = Company.objects.create(name="Test Company")
         cls.countries = [
@@ -34,11 +34,11 @@ class TestTripViews(TestCase):
             for i in range(1, 26)
         ]
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.country = self.countries[randint(0, 3)]
         self.url = reverse("trip_list_by_direction", args=[self.country.id])
 
-    def test_trip_list_by_direction(self):
+    def test_trip_list_by_direction(self) -> None:
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
@@ -50,7 +50,7 @@ class TestTripViews(TestCase):
 
         self.assertCountEqual(res_trips, trips)
 
-    def test_trip_list_by_town_view(self):
+    def test_trip_list_by_town_view(self) -> None:
         now = timezone.now()
         date_out = timezone.make_aware(
             datetime(now.year, now.month, now.day)

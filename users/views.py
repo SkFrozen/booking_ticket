@@ -2,8 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect, render
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 
@@ -14,7 +15,7 @@ from .models import User
 from .tasks import delete_user_task, send_register_email_task
 
 
-def register_view(request):
+def register_view(request: WSGIRequest) -> HttpResponse:
     form = UserForm()
 
     if request.method == "POST":
@@ -24,7 +25,6 @@ def register_view(request):
             user = User.objects.create_user(**cleaned_data, is_active=False)
             domain = str(get_current_site(request))
 
-            # send_register_email_task.delay(domain, user.id)
             msg: bool = send_register_email_task.apply_async(args=[domain, user.id])
             delete_user_task.apply_async(args=[user.id], countdown=60)
             return render(
@@ -36,7 +36,9 @@ def register_view(request):
     return render(request, "registration/register-form.html", {"form": form})
 
 
-def confirm_register_view(request, uidb64, token):
+def confirm_register_view(
+    request: WSGIRequest, uidb64: str, token: str
+) -> HttpResponseRedirect | HttpResponse | None:
     username = force_str(urlsafe_base64_decode(uidb64))
     try:
         user = User.objects.get(username=username)

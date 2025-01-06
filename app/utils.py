@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 
-def generate_ticket_pdf(data):
+def generate_ticket_pdf(data: dict) -> bytes:
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     c.drawString(100, 750, f"Seat: {data["seat"]}")

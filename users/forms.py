@@ -1,3 +1,5 @@
+from typing import Any
+
 from django import forms
 
 from .models import User
@@ -32,7 +34,7 @@ class UserForm(forms.ModelForm):
             ),
         }
 
-    def clean(self):
+    def clean(self) -> dict[str, Any]:
         data = self.cleaned_data
         if data["password"] != data["password2"]:
             raise forms.ValidationError("Passwords do not match")
