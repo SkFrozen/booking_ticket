@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from django.conf.global_settings import DATE_INPUT_FORMATS, STATICFILES_DIRS
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,12 +30,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy("
 )
-
+ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", SECRET_KEY)
+STRIPE_PUBLIC_KEY = "pk_test_51QgLp6QYxjsOX5t4uc4RgQqGtXuoxRLeO9jrtSTqTFDMJPNFAW1IeOKHn5Ys7goSQUxjULCw19Om5wd4qtM3Psg000CMYOCwaj"
+STRIPE_SECRET_KEY = "sk_test_51QgLp6QYxjsOX5t4HCFYjHOWbP1mkKJIZ5OtRx3NyZbDkeSdXPyTDpACkra6XFDgLJuujp0QO5H3iUsjVJUXGDMg0029YkpVre"
+STRIPE_ENDPOINT_SECRET = (
+    "whsec_da94ea92c34b9b8033263adc11ec2cc7a332909ca41f08b1db4578fcadea8510"
+)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+if DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "django.db.backends": {
+                "handlers": ["console"],
+                "level": "DEBUG",
+            },
+        },
+    }
 
 # Application definition
 
@@ -46,6 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "bootstrap5",
+    "django_countries",
     "users",
     "trips",
     "app",
@@ -166,13 +189,13 @@ USE_I18N = False
 USE_TZ = True
 
 DATE_FORMAT = "d-m-Y"
-DATETIME_FORMAT = "%d.%m.%y %H:%M"
+DATETIME_FORMAT = "d-m-Y H:M"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

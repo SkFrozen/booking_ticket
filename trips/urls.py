@@ -1,16 +1,16 @@
 from django.urls import path
 
-from .views import trip_list_by_direction_view, trip_list_by_town_view
+from .views import cities_list_view, trips_list_by_town_view
 
 urlpatterns = [
     path(
-        "direction/<int:direction>/",
-        trip_list_by_direction_view,
-        name="trip_list_by_direction",
+        "direction/<int:country_id>/",
+        cities_list_view,
+        name="cities_list",
     ),
     path(
-        "direction/<int:direction>/town/<str:town_to>/",
-        trip_list_by_town_view,
-        name="detail_trip",
+        "direction/<int:country_id>/city/<int:city_id>/flights",
+        trips_list_by_town_view,
+        name="trips_list",
     ),
 ]

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}Booking{% endblock title %}
+
+{% block content %}
+<h2 class="text-center">Add passengers</h2>
+<div class="container mt-5">
+{% if user.is_authenticated %}
+    <form action="{% url 'book_seat' trip.id %}" method="get" class="d-flex flex-column align-items-center book-form">
+        {% for passport in passports %}
+        <div>
+            <input type="checkbox" id="passenger-{{ passport.id }}" value="{{ passport.id }}" name="passport">
+            <label for="passenger-{{ passport.id }}">{{ passport }}</label>
+        </div>
+        {% endfor %}
+        
+        <a href="#" class="btn btn-primary w-25 mt-4 ms-auto me-auto d-block">Add passengers</a>
+        <button type="submit" onclick="bookSeats()" class="btn btn-primary book-trip mt-4">Book</button>
+    </form>
+    
+{% else %}
+    <form action="{% url 'book_seat' trip.id %}" method="post" class="d-flex flex-column align-items-center book-form">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        <div id="forms-container" class="w-50">
+            {% for form in formset %}
+            <div class="passport-form m-auto">
+                <h2 class="text-center mt-4">Passport</h2>
+                {% bootstrap_form form %}
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-primary w-25 mt-2" onclick="addForm()">Add passport</button>
+        <button type="submit" onclick="bookSeats(event)" class="btn btn-primary book-trip mt-4">Book</button>
+    </form>
+{% endif %}
+<button type="button" onclick="clearSeats(event)" class="btn btn-success w-25 mt-4" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Choose seat</button>
+</div>
+
+<div class="modal" id="staticBackdrop" data-bs-backdrop='static' data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSizeLabel">
+                    Seats map: {{trip.departure_airport}} - {{ trip.arrival_airport }}
+                </h5>
+                <button type="button" class="btn-close" aria-label="Закрыть" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container trip-chart text-center" data-trip="{{ trip.id }}">
+                    <strong>Business</strong>
+                    {% for row_number, seats in seats_map.business.items %}
+                    <div class="row_b business-row">
+                        {% for seat in seats %}
+                        <a href="#" class="seat btn p-0{% if seat.is_booked %} bg-danger disabled {% else %} bg-success {% endif %}" role="button" aria-disabled="true">
+                            <div data-seat="{{ seat.id }}">
+                                {{ seat.number }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <strong>Economy</strong>
+                    {% for row_number, seats in seats_map.economy.items %}
+                    <div class="row_b economy-row">
+                        {% for seat in seats %}
+                        <a href="#" class="seat btn p-0{% if seat.is_booked %} bg-danger disabled {% else %} bg-success {% endif %}" role="button" aria-disabled="true">
+                            <div data-seat="{{ seat.id }}">
+                                {{ seat.number }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

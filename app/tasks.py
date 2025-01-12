@@ -10,15 +10,14 @@ User = get_user_model()
 
 
 @shared_task
-def send_ticket_to_user(booking_id: int, user_id: int) -> None:
-
+def send_ticket_to_user(books: list, email: str) -> None:
+    booking = Booking.objects.filter(id__in=books).all()
     try:
-        booking = Booking.objects.get(id=booking_id)
-        user = User.objects.get(id=user_id)
-        ticket = generate_ticket_pdf(booking.ticket)
-        subject = f"{user.first_name} {user.last_name}'s ticket!"
-        message = f"Hello, {user.username}. You can download and print the ticket"
-        send_email_task(message, user.email, subject, ticket, "ticket.pdf")
+        for book in booking:
+            ticket = generate_ticket_pdf(book.ticket)
+            subject = "Here is your ticket!"
+            message = f"Hello. You can download and print the ticket"
+            send_email_task(message, email, subject, ticket, "ticket.pdf")
     except Exception as e:
         print(e)
 

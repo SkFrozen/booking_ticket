@@ -6,33 +6,42 @@
 
 <div class="container d-flex flex-column align-items-center">
 {% if page_obj %}
-<h2 class="text-center">To {{ page_obj.0.country.name}}</h2>
-<div class="row row-cols-3 w-50 m-auto">
+<h2 class="text-center">To {{ page_obj.0.arrival_airport.city.name}}</h2>
+<div class="row row-cols-2 w-100">
     {% for trip in page_obj %}
     
-    <div class="container">
-        <a href="{% url 'detail_trip' direction=direction town_to=trip.town_to %}" class="img">
-            <img src="https://lh5.googleusercontent.com/p/AF1QipPh0HcRZQgDcMRt3DwCIG3Cx5hu_nhbTPflOf-b=w540-h312-n-k-no" alt="img-fluid" class="img-thumbnail">
+    <div class="col">
+        <a href="{% url 'add_passport' trip.id %}" class="text-decoration-none text-white">
+            <div class="border p-2 bg-secondary rounded-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>Price: {{ trip.plane.economy_class_price }}</div>
+                    <div class="w-25">
+                        <img src="{{ trip.company.image.url }}" alt="" class="img-thumbnail rounded-circle w-50 float-end">
+                    </div>
+                </div>
+                <div class="">
+                    <div>
+                        <span>Out: {{ trip.time_out|date:"m/d/Y H:i" }}</span>
+                        <br>
+                        <span>From: {{ trip.departure_airport }} - {{ trip.departure_airport.city }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span>In: {{ trip.time_in|date:"m/d/Y H:i" }}</span>
+                        <br>
+                        <span>To: {{ trip.arrival_airport }} - {{ trip.arrival_airport.city }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span>Hours on the way: {{ trip.time_on_way }} / direct</span>
+                    </div>
+                </div>
+            </div>
         </a>
-        <p>{{ trip.town_to }}</p>  
-
-        {% if trip.min_price and trip.free_seats_count %}
-        <p>From: {{ trip.town_from }} {{ trip.airport }}</p>
-        <p>Price: {{ trip.min_price }}</p>
-        <p>Available seats: {{ trip.free_seats_count }} of {{ trip.seats.count }}</p>
-        <a href="{% url 'booking' trip_id=trip.id %}" class="btn btn-success">Booking</a>
-
-        {% elif trip.town_to in request.path %}
-        <p>From: {{ trip.town_from }} {{ trip.airport }}</p>
-        <p>No ticket</p>
-
-        {% endif %}
     </div>
     
     {% endfor %}
     
 </div>
-<div class="w-25 m-auto justify-content-center pagination">
+<div class="w-25 m-auto justify-content-center pagination mt-5">
     <span class="step-links">
         {% if page_obj.has_previous %}
         <a href="?page=1">&laquo; first</a>
@@ -52,7 +61,7 @@
 
 {% else %}
     <h2 class="text-center">No available flights</h2>
-    <a href="{% url 'trips_list_by_direction' direction %}" class="btn btn-primary">Back</a>
+    <a href="{% url 'cities_list' country_id %}" class="btn btn-primary">Back</a>
 </div>
 
 {% endif %}

@@ -1,8 +1,10 @@
 {% load bootstrap5 %}
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     <title>
@@ -25,6 +27,7 @@
     <footer>
         {% include "footer.html" %}
     </footer>
-    
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
