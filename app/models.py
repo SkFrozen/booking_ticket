@@ -1,14 +1,10 @@
 from typing import Any
 
-from cryptography.fernet import Fernet
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django_countries.fields import CountryField
 
 from trips.models import Seat
-
-cipher_sisuite = Fernet(settings.ENCRYPTION_KEY.encode())
 
 
 class Passport(models.Model):
@@ -33,18 +29,13 @@ class Passport(models.Model):
 
     class Meta:
         db_table = "passports"
+        indexes = [
+            models.Index(fields=["first_name", "last_name"]),
+            models.Index(fields=["owner"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.number = cipher_sisuite.encrypt(self.number.encode()).decode()
-        super().save(*args, **kwargs)
-
-    @property
-    def get_number(self) -> str:
-        return cipher_sisuite.decrypt(self.number.encode()).decode()
 
 
 class Booking(models.Model):
@@ -54,15 +45,22 @@ class Booking(models.Model):
         ("rejected", "Rejected"),
     )
 
-    seat = models.OneToOneField(Seat, on_delete=models.CASCADE, related_name="seat")
+    seat = models.OneToOneField(Seat, on_delete=models.DO_NOTHING, related_name="seat")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default="pending")
-    passport = models.ForeignKey(Passport, on_delete=models.CASCADE)
+    passport = models.ForeignKey(
+        Passport, on_delete=models.CASCADE, related_name="booking"
+    )
 
     class Meta:
         db_table = "booking"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["passport"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["seat"]),
+        ]
 
     def __str__(self) -> str:
         return f"Seat: {self.seat}"

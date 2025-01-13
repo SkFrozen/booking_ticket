@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import cities_list_view, trips_list_by_town_view
+from .views import cities_list_view, trips_list_by_town_view, trips_search_list_view
 
 urlpatterns = [
     path(
@@ -13,4 +13,5 @@ urlpatterns = [
         trips_list_by_town_view,
         name="trips_list",
     ),
+    path("direction/search/", trips_search_list_view, name="search_trips"),
 ]

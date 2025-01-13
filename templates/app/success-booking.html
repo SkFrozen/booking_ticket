@@ -7,19 +7,20 @@
 <div class="container text-center">
     {% if info_book %}
     <h1>You have booked seats</h1>
+    <h2>You have 20 minutes to pay for the booking</h2>
     <div class="container">
         <p>Trip: {{ info_book.trip }}</p>
         <p>Total price: {{ info_book.cost }}</p>
         <p>Total seats: {{ info_book.seats }}</p>
 
-        <button class="btn btn-success" id="submitButton">Pay</button>
     </div>
+    <form method="post" action="{% url 'payment' info_book.payment.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success" id="checkout-button">Pay</button>
+    </form>
     {% elif msg %}
     <h2>{{ msg }}</h2>
     {% endif %}
 
 </div>
-<script>
-    let url = "{% url 'payment' info_book.payment.id %}"
-</script>
 {% endblock %}

@@ -4,39 +4,97 @@
 
 {% block content %}
 
-<div class="container">
-    <h1 class="text-center">Profile page {{ user.username }}</h1>
-    <h2 class="text-center">Booking</h2>
-    <div>
+<h1 class="text-center">Profile page {{ user.username }}</h1>
+<h2 class="text-center">Booking</h2>
+<div class="container d-flex justify-content-between">
+    <div class="w-25">
+        {% for passport in passports %}
+        <div class="container mt-3 p-2 border bg-light">
+            <h4>Passport</h4>
+            <p>
+                Number: {{ passport.number}}
+            </p>
+            <p>
+                First name: {{ passport.first_name }}
+            </p>
+            <p>
+                Last name: {{ passport.last_name }}
+            </p>
+            <p>
+                Date of birth: {{ passport.date_of_birth }}
+            </p>
+            <p>
+                Sex: {{ passport.sex }}
+            </p>
+            <div class="container d-flex justify-content-center">
+                <a href="{% url "passport_update" passport.id %}" class="btn btn-primary w-25 mb-2 mt-2">Edit</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="w-25">
         {% for booking in bookings %}
-        <div class="container w-25 m-auto mt-3 p-2 border bg-light">
+        <div class="container mt-3 p-2 border bg-light">
+            <h4>Booking</h4>
             <p>
-                Flight: {{ booking.trip.town_from }} {{ booking.trip.airport }} - {{ booking.trip.town_to }}
+                Flight: {{ booking.trip_number }}
             </p>
             <p>
-                Date out: {{ booking.trip.time_out }}
+                From: {{ booking.departure_city }} {{ booking.departure_airport }}
             </p>
             <p>
-                Date in: {{ booking.trip.time_in }}
+                To: {{ booking.arrival_city }} {{ booking.arrival_airport }}
             </p>
             <p>
-                Seat number: {{ booking.seat.number }}
+                Date out: {{ booking.time_out}}
             </p>
             <p>
-                Seat price: {{ booking.seat.price }}
+                Date in: {{ booking.time_in }}
             </p>
             <p>
-                Paid: {{ booking.paid }}
+                Passenger: {{ booking.first_name }} {{ booking.last_name }}
             </p>
-            {% if not booking.paid %}
+            <p>
+                Seat number: {{ booking.seat_number}}
+            </p>
+            <p>
+                Price: {{ booking.price }}
+            </p>
+            <p>
+                Paid: {{ booking.status }}
+            </p>
+            {% if booking.status == "pending" %}
+            <div class="container">
+                <form action="{% url 'payment' booking.payment_id  %}" class="d-flex justify-content-evenly" method="post">
+                    <a href="{% url 'reject' booking.id %}" class="btn btn-danger w-25">Reject</a>
+                    <button type="submit" class="btn btn-success w-50" id="checkout-button">Pay</button>
+                </form>
+            </div>
+            {% else %}
             <div class="container d-flex justify-content-evenly">
                 <a href="{% url 'reject' booking.id %}" class="btn btn-danger w-25">Reject</a>
-                <a href="{% url 'payment' booking.id %}" class="btn btn-success w-50">Pay</a>
             </div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
+</div>
+<div class="w-25 m-auto justify-content-center pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo; first</a>
+        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
 </div>
 
 {% endblock content %}

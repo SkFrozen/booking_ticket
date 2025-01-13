@@ -6,7 +6,7 @@
 
 <div class="container d-flex flex-column align-items-center">
 {% if page_obj %}
-<h2 class="text-center">To {{ page_obj.0.arrival_airport.city.name}}</h2>
+<h2 class="text-center">Available Flights</h2>
 <div class="row row-cols-2 w-100">
     {% for trip in page_obj %}
     
@@ -58,10 +58,10 @@
         {% endif %}
     </span>
 </div>
-
+<a href="{% url 'cities_list' page_obj.0.arrival_airport.city.country_id %}" class="btn btn-primary">Back</a>
 {% else %}
     <h2 class="text-center">No available flights</h2>
-    <a href="{% url 'cities_list' country_id %}" class="btn btn-primary">Back</a>
+    <a href="{% url 'directions' %}" class="btn btn-primary">Back</a>
 </div>
 
 {% endif %}

@@ -12,6 +12,10 @@ class Company(models.Model):
     class Meta:
         db_table = "companies"
         verbose_name_plural = "companies"
+        indexes = [
+            models.Index(fields=["code"]),
+            models.Index(fields=["name"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -24,6 +28,9 @@ class Country(models.Model):
     class Meta:
         db_table = "countries"
         verbose_name_plural = "countries"
+        indexes = [
+            models.Index(fields=["name"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -39,6 +46,10 @@ class City(models.Model):
     class Meta:
         db_table = "cities"
         verbose_name_plural = "cities"
+        indexes = [
+            models.Index(fields=["name"]),
+            models.Index(fields=["country"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -51,6 +62,10 @@ class Airport(models.Model):
     class Meta:
         db_table = "airports"
         verbose_name_plural = "airports"
+        indexes = [
+            models.Index(fields=["name"]),
+            models.Index(fields=["city"]),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -65,6 +80,9 @@ class Plane(models.Model):
     class Meta:
         db_table = "planes"
         verbose_name_plural = "planes"
+        indexes = [
+            models.Index(fields=["model"]),
+        ]
 
     def __str__(self) -> str:
         return self.model
@@ -119,6 +137,14 @@ class Trip(models.Model):
     class Meta:
         db_table = "trips"
         verbose_name_plural = "trips"
+        indexes = [
+            models.Index(fields=["departure_airport"]),
+            models.Index(fields=["arrival_airport"]),
+            models.Index(fields=["time_out"]),
+            models.Index(fields=["plane"]),
+            models.Index(fields=["company"]),
+            models.Index(fields=["number"]),
+        ]
 
     def __str__(self) -> str:
         return self.number
@@ -160,6 +186,9 @@ class Seat(models.Model):
     class Meta:
         db_table = "seats"
         verbose_name_plural = "seats"
+        indexes = [
+            models.Index(fields=["trip"]),
+        ]
 
     @property
     def count(self) -> int:

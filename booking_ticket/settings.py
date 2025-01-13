@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy("
 )
-ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", SECRET_KEY)
+
 STRIPE_PUBLIC_KEY = "pk_test_51QgLp6QYxjsOX5t4uc4RgQqGtXuoxRLeO9jrtSTqTFDMJPNFAW1IeOKHn5Ys7goSQUxjULCw19Om5wd4qtM3Psg000CMYOCwaj"
 STRIPE_SECRET_KEY = "sk_test_51QgLp6QYxjsOX5t4HCFYjHOWbP1mkKJIZ5OtRx3NyZbDkeSdXPyTDpACkra6XFDgLJuujp0QO5H3iUsjVJUXGDMg0029YkpVre"
 STRIPE_ENDPOINT_SECRET = (
@@ -71,7 +71,7 @@ INSTALLED_APPS = [
     "django_countries",
     "users",
     "trips",
-    "app",
+    "app.apps.AppConfig",
 ]
 
 MIDDLEWARE = [

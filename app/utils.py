@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import stripe
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -36,13 +37,13 @@ def generate_seats_map(seats: list) ->dict:
     
     return seat_map
 
-def generate_items_for_payment(stripe, payment_id: int):
+def generate_items_for_payment(stripe: stripe, payment_id: int)-> list:
     items = []
     payment = Payment.objects.get(pk=payment_id)
     booking = payment.booking.all().select_related("seat")
     for book in booking:
-        product = stripe.Product.create(name=f"{book.seat.number} {book.seat.seat_class}")
-        price = stripe.Price.create(product=product.id, unit_amount=(book.seat.price * 100), currency="usd")
+        product = stripe.Product.create(name=f"{book.seat.number} {book.seat.seat_class}", metadata={"payment_id": payment_id})
+        price = stripe.Price.create(product=product.id, unit_amount=(book.seat.price * 100), currency="usd", metadata={"payment_id": payment_id})
         item = {"price": price.id, "quantity": 1}
         items.append(item)
 

@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% load bootstrap5 %}
+
 {% block title %}Booking{% endblock title %}
 
 {% block content %}
 
-<h2 class="text-center">Add passengers</h2>
-<div class="container mt-5">
-    <form method="post" class="d-flex flex-column align-items-center">
-            {% csrf_token %}
-            {{ formset.management_form }}
-            <div id="forms-container" class="w-50">
-                {% for form in formset %}
-                    <div class="passport-form m-auto">
-                        <h2 class="text-center mt-4">Passport</h2>
-                        {% bootstrap_form form %}
-                    </div>
-                {% endfor %}
+<div class="container">
+    <form action="{% url 'passport_create' trip_id %}" method="post" class="d-flex flex-column align-items-center book-form">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        <div id="forms-container" class="w-50">
+            {% for form in formset %}
+            <div class="passport-form m-auto">
+                <h2 class="text-center mt-4">Passport</h2>
+                {% bootstrap_form form %}
             </div>
-            <button type="button" class="btn btn-primary w-25 mt-2" onclick="addForm()">Add passport</button>
-            <button type="submit" class="btn btn-success w-25 mt-4">Choose seat</button>
-        </form>
-    </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary book-trip mt-4">Create passport</button>
+        <button type="button" class="btn btn-primary w-25 mt-2" onclick="addForm()">Add passport</button>
+    </form>
 </div>
+
 {% endblock content %}

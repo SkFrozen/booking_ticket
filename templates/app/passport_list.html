@@ -5,9 +5,9 @@
 
 {% block content %}
 <h2 class="text-center">Add passengers</h2>
-<div class="container mt-5">
+<div class="container mt-5 d-flex flex-column align-items-center">
 {% if user.is_authenticated %}
-    <form action="{% url 'book_seat' trip.id %}" method="get" class="d-flex flex-column align-items-center book-form">
+    <form action="{% url 'book_seat' trip.id %}" method="get" class="d-flex flex-column align-items-center book-form w-50">
         {% for passport in passports %}
         <div>
             <input type="checkbox" id="passenger-{{ passport.id }}" value="{{ passport.id }}" name="passport">
@@ -15,8 +15,8 @@
         </div>
         {% endfor %}
         
-        <a href="#" class="btn btn-primary w-25 mt-4 ms-auto me-auto d-block">Add passengers</a>
-        <button type="submit" onclick="bookSeats()" class="btn btn-primary book-trip mt-4">Book</button>
+        <a href="{% url "passport_create" trip.id %}" class="btn btn-primary w-25 mt-4 ms-auto me-auto d-block">Add passengers</a>
+        <button type="submit" onclick="bookSeats(event)" class="btn btn-primary book-trip mt-4">Book</button>
     </form>
     
 {% else %}

@@ -1,12 +1,9 @@
-from datetime import datetime, timedelta
-
-import requests
 import stripe
+import stripe.error
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
-from django.db.models import Count, Sum
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
@@ -14,13 +11,13 @@ from django.http import (
     JsonResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.base import constant_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, TemplateView
 
+from trips.forms import TripSearchForm
 from trips.models import Country, Seat, Trip
 
-from .forms import PassportFormSet
+from .forms import PassportForm, PassportFormSet
 from .models import Booking, Passport, Payment
 from .tasks import send_ticket_to_user
 from .utils import generate_items_for_payment, generate_seats_map
@@ -31,6 +28,43 @@ def stripe_config_view(request):
     if request.method == "GET":
         stripe_config = {"publicKey": settings.STRIPE_PUBLIC_KEY}
         return JsonResponse(stripe_config, safe=False)
+
+
+@login_required
+def passport_create_view(
+    request: WSGIRequest, trip_id: int
+) -> HttpResponse | HttpResponseRedirect:
+    if request.method == "POST":
+        formset = PassportFormSet(request.POST)
+        if formset.is_valid():
+            passports = formset.save(commit=False)
+            for passport in passports:
+                passport.owner = request.user
+                passport.save()
+            return redirect("add_passport", trip_id)
+    else:
+        formset = PassportFormSet(queryset=Passport.objects.none())
+
+    context = {
+        "formset": formset,
+        "trip_id": trip_id,
+    }
+    return render(request, "app/passport_form.html", context)
+
+
+@login_required
+def passport_update_view(request: WSGIRequest, passport_id: int) -> HttpResponse:
+    passport = Passport.objects.get(pk=passport_id)
+    if request.method == "POST":
+        form = PassportForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            Passport.objects.filter(pk=passport_id).update(**cleaned_data)
+            return redirect("profile")
+    else:
+        form = PassportForm(instance=passport)
+    context = {"form": form}
+    return render(request, "app/passport_edit.html", context)
 
 
 def booking_passports_view(request: WSGIRequest, trip_id: int) -> HttpResponse:
@@ -92,9 +126,8 @@ def booking_seat_view(
         seat.is_booked = True
         seat.save()
         booking = Booking(seat=seat, passport=passport)
+        booking.save()
         bookings.append(booking)
-
-    bookings = Booking.objects.bulk_create(bookings)
     payment = Payment.objects.create()
     payment.booking.set(bookings)
     info_book["payment"] = payment
@@ -104,40 +137,46 @@ def booking_seat_view(
 
 @csrf_exempt
 def payment_view(request: WSGIRequest, payment_id: int) -> HttpResponse:
-    if request.user.is_authenticated:
-        email = request.user.email
-    else:
-        email = request.POST.get("email")
-
-    if request.method == "GET":
+    if request.method == "POST":
         domain_url = "http://127.0.0.1:8000/"
         stripe.api_key = settings.STRIPE_SECRET_KEY
-        items = generate_items_for_payment(stripe, payment_id)
+
         try:
-            print("check: ", 1)
+            items = generate_items_for_payment(stripe, payment_id)
             checkout_session = stripe.checkout.Session.create(
-                success_url=domain_url + "success?session_id={CHECKOUT_SESSION_}",
+                success_url=domain_url
+                + f"success/{payment_id}"
+                + "?session_id={CHECKOUT_SESSION_}",
                 cancel_url=domain_url + "cancelled/",
                 payment_method_types=["card"],
                 metadata={"payment_id": payment_id},
                 mode="payment",
                 line_items=items,
             )
-            return JsonResponse({"sessionId": checkout_session["id"]})
+
         except Exception as e:
-            return JsonResponse({"error": str(e)})
+            return str(e)  # JsonResponse({"error": str(e)})
+
+        return redirect(checkout_session.url, code=303)
 
 
-class SuccessView(TemplateView):
+class SuccessPaymentView(TemplateView):
     template_name = "app/success_payment.html"
 
+    def get(self, request: WSGIRequest, payment_id: int) -> HttpResponse:
+        payment = Payment.objects.filter(pk=payment_id).first()
+        return render(request, self.template_name, {"payment": payment})
 
-class CancelledView(TemplateView):
+
+class CancelledPaymentView(TemplateView):
     template_name = "app/cancelled_payment.html"
 
 
 @csrf_exempt
 def stripe_webhook(request: WSGIRequest) -> HttpResponse:
+    """
+    Checks whether the payment was successful and updates the booking status
+    """
     stripe.api_key = settings.STRIPE_SECRET_KEY
     endpoint_secret = settings.STRIPE_ENDPOINT_SECRET
     payload = request.body
@@ -153,31 +192,33 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
         # Invalid signature
         return HttpResponse(status=400)
 
-    # Handle the checkout.session.completed event
+    print("event type:", event["type"])
     if event["type"] == "checkout.session.completed":
-        payment_id = event["data"]["object"]["metadata"]["payment_id"]
-        payment = Payment.objects.get(pk=payment_id)
+        stripe_session = event.data.object
+        assert isinstance(stripe_session, stripe.checkout.Session)
+
+        try:
+            payment_id = (
+                event.get("data").get("object").get("metadata").get("payment_id")
+            )
+            payment = Payment.objects.get(pk=payment_id)
+        except Payment.DoesNotExist:
+            payment_intent = stripe_session.payment_intent
+            amount = stripe_session.amount_total
+            stripe.Refund.create(payment_intent=payment_intent, amount=amount)
+            return HttpResponse(status=200)
+
+        email = event["data"]["object"]["customer_details"]["email"]
+        booking = payment.booking.all()
         payment.paid = True
         payment.save(update_fields=["paid"])
-        booking = payment.booking.all()
         for book in booking:
             book.status = "paid"
             book.save(update_fields=["status"])
 
+        send_ticket_to_user.delay(payment_id, email)
+
     return HttpResponse(status=200)
-
-
-def cancelled_payment_view(request: WSGIRequest) -> HttpResponse:
-    payment_id = request.GET.get("payment_id")
-    payment = Payment.objects.get(pk=payment_id)
-    payment.paid = False
-    payment.save(update_fields=["paid"])
-    booking = payment.booking.all()
-    for book in booking:
-        book.status = "rejected"
-        book.save(update_fields=["status"])
-    msg = "Please try again"
-    return render(request, "app/cancelled_payment.html", {"msg": msg})
 
 
 @login_required
@@ -195,13 +236,16 @@ class DirectionsView(ListView):
     context_object_name = "countries"
 
     def get(self, request: WSGIRequest) -> HttpResponse:
+        form = TripSearchForm()
         if cache.get("countries"):
             print("cache")
-            return render(
-                request, self.template_name, {"countries": cache.get("countries")}
-            )
+            context = {"countries": cache.get("countries"), "search_form": form}
+
+            return render(request, self.template_name, context)
         else:
             print("miss cache")
             countries = Country.objects.all()
             cache.set("countries", countries, 60 * 60)
-            return render(request, self.template_name, {"countries": countries})
+            context = {"countries": countries, "search_form": form}
+
+            return render(request, self.template_name, context)

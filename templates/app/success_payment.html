@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p>Your payment succeeded</p>
+<div class="container text-center">
+    {% if payment %}
+        <h1>Your payment succeeded. We have sent the ticket to your email</h1>
+    {% else %}
+        <h1>The time for payment has expired. Payment rejected</h1>
+    {% endif %}
+</div>
 {% endblock content %}

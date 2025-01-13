@@ -3,12 +3,13 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.handlers.wsgi import WSGIRequest
+from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 
-from app.models import Booking
+from app.models import Booking, Passport, Payment
 
 from .forms import UserForm
 from .models import User
@@ -58,9 +59,52 @@ def confirm_register_view(
 
 @login_required
 def profile_view(request):
+    user = request.user
+    passports = Passport.objects.filter(owner=user).all()
     bookings = (
-        Booking.objects.filter(user=request.user)
-        .select_related("seat")
-        .select_related("trip")
+        Booking.objects.filter(passport__owner=user)
+        .select_related(
+            "passport",
+            "seat",
+            "seat__trip",
+            "seat__trip__departure_airport",
+            "seat__trip__arrival_airport",
+            "seat__trip__departure_airport__city",
+            "seat__trip__arrival_airport__city",
+        )
+        .prefetch_related("payment")
     )
-    return render(request, "registration/profile.html", {"bookings": bookings})
+
+    paginator = Paginator(bookings, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    booked_seats_info = []
+    for booking in page_obj:
+        seat = booking.seat
+        trip = seat.trip
+        passport = booking.passport
+        booked_seats_info.append(
+            {
+                "trip_number": trip.number,
+                "departure_city": trip.departure_airport.city.name,
+                "departure_airport": trip.departure_airport.name,
+                "arrival_city": trip.arrival_airport.city.name,
+                "arrival_airport": trip.arrival_airport.name,
+                "time_out": trip.time_out,
+                "time_in": trip.time_in,
+                "first_name": passport.first_name,
+                "last_name": passport.last_name,
+                "seat_number": seat.number,
+                "price": seat.price,
+                "status": booking.status,
+                "id": booking.id,
+                "payment_id": booking.payment.get().id,
+            }
+        )
+    context = {
+        "page_obj": page_obj,
+        "bookings": booked_seats_info,
+        "passports": passports,
+    }
+    return render(request, "registration/profile.html", context)
