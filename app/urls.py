@@ -10,13 +10,11 @@ from .views import (
     passport_update_view,
     payment_view,
     reject_booking_view,
-    stripe_config_view,
     stripe_webhook,
 )
 
 urlpatterns = [
     path("", DirectionsView.as_view(), name="directions"),
-    path("config/", stripe_config_view, name="config"),
     path("webhook/", stripe_webhook),
     path(
         "booking/passport/<int:passport_id>/update/",

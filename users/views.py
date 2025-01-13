@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 
-from app.models import Booking, Passport, Payment
+from app.models import Booking, Passport
 
 from .forms import UserForm
 from .models import User
@@ -17,6 +17,12 @@ from .tasks import delete_user_task, send_register_email_task
 
 
 def register_view(request: WSGIRequest) -> HttpResponse:
+    """
+    View function for user registration.
+    Sends confirmation email to the user
+    Deletes the user if he has not confirmed the registration
+    """
+
     form = UserForm()
 
     if request.method == "POST":
@@ -58,7 +64,11 @@ def confirm_register_view(
 
 
 @login_required
-def profile_view(request):
+def profile_view(request: WSGIRequest) -> HttpResponse:
+    """
+    View function for user profile page.
+    Collects information about the user's bookings and passports
+    """
     user = request.user
     passports = Passport.objects.filter(owner=user).all()
     bookings = (

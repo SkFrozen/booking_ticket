@@ -12,6 +12,10 @@ from .models import City, Trip
 
 
 def cities_list_view(request: WSGIRequest, country_id: int) -> HttpResponse:
+    """
+    Cities list view
+    Returns a list of cities in the specified country using country_id
+    """
     form = TripSearchForm()
     cities = (
         City.objects.filter(country__id=country_id)
@@ -30,6 +34,10 @@ def cities_list_view(request: WSGIRequest, country_id: int) -> HttpResponse:
 def trips_list_by_town_view(
     request: WSGIRequest, country_id: int, city_id: int
 ) -> HttpResponse:
+    """
+    Returns a list of trips to the specified city using city_id,
+    filtered by date
+    """
     date_now = timezone.now()
     date_out = timezone.make_aware(
         datetime(date_now.year, date_now.month, date_now.day)
@@ -60,9 +68,13 @@ def trips_list_by_town_view(
 
 
 def trips_search_list_view(request: WSGIRequest) -> HttpResponse:
+    """
+    Returns a list of trips based on the city of departure or arrival
+    or the time of departure
+    """
+
     form = TripSearchForm(request.GET)
     if form.is_valid():
-        print(1)
         departure_city = form.cleaned_data.get("departure_city", "")
         arrival_city = form.cleaned_data.get("arrival_city", "")
         time_out = form.cleaned_data.get("time_out", "")
@@ -85,10 +97,6 @@ def trips_search_list_view(request: WSGIRequest) -> HttpResponse:
             .order_by("-time_out")
         )
         context = {"page_obj": trips}
-        return render(
-            request,
-            "trips/trip-list.html",
-            context,
-        )
+        return render(request, "trips/trip-list.html", context)
     else:
         return redirect("directions")

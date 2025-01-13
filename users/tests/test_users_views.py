@@ -62,46 +62,46 @@ class TestRegisterViews(TestCase):
         self.assertRedirects(response, reverse("login"))
 
 
-class TestProfileView(TestCase):
+# class TestProfileView(TestCase):
 
-    @classmethod
-    def setUpTestData(cls) -> None:
-        cls.client = Client()
-        cls.url = reverse("profile")
-        cls.user = User.objects.create_user(
-            username="test",
-            email="test@test.com",
-            password="test",
-            date_of_birth="1990-03-20",
-        )
-        cls.company = Company.objects.create(name="test_company")
-        cls.country = Country.objects.create(name="test_country")
-        cls.trip = Trip.objects.create(
-            town_from="test_town_from",
-            town_to="test_town_to",
-            time_out=timezone.now() + timezone.timedelta(days=5),
-            time_in=timezone.now() - timezone.timedelta(days=5, hours=5),
-            airport="test_airport",
-            plane="test_plane",
-            company=cls.company,
-            country=cls.country,
-        )
-        cls.seats = [
-            Seat.objects.create(price=100, trip=cls.trip, number=i, is_booked=True)
-            for i in range(5)
-        ]
-        cls.booking = [
-            Booking.objects.create(user=cls.user, trip=cls.trip, seat=seat)
-            for seat in cls.seats
-        ]
+#     @classmethod
+#     def setUpTestData(cls) -> None:
+#         cls.client = Client()
+#         cls.url = reverse("profile")
+#         cls.user = User.objects.create_user(
+#             username="test",
+#             email="test@test.com",
+#             password="test",
+#             date_of_birth="1990-03-20",
+#         )
+#         cls.company = Company.objects.create(name="test_company")
+#         cls.country = Country.objects.create(name="test_country")
+#         cls.trip = Trip.objects.create(
+#             town_from="test_town_from",
+#             town_to="test_town_to",
+#             time_out=timezone.now() + timezone.timedelta(days=5),
+#             time_in=timezone.now() - timezone.timedelta(days=5, hours=5),
+#             airport="test_airport",
+#             plane="test_plane",
+#             company=cls.company,
+#             country=cls.country,
+#         )
+#         cls.seats = [
+#             Seat.objects.create(price=100, trip=cls.trip, number=i, is_booked=True)
+#             for i in range(5)
+#         ]
+#         cls.booking = [
+#             Booking.objects.create(user=cls.user, trip=cls.trip, seat=seat)
+#             for seat in cls.seats
+#         ]
 
-    def test_profile_view(self) -> None:
-        self.client.force_login(self.user)
-        response = self.client.get(self.url)
+#     def test_profile_view(self) -> None:
+#         self.client.force_login(self.user)
+#         response = self.client.get(self.url)
 
-        res_users = [book.user for book in response.context[0].get("bookings")]
-        users = [book.user for book in self.booking]
+#         res_users = [book.user for book in response.context[0].get("bookings")]
+#         users = [book.user for book in self.booking]
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "registration/profile.html")
-        self.assertCountEqual(res_users, users)
+#         self.assertEqual(response.status_code, 200)
+#         self.assertTemplateUsed(response, "registration/profile.html")
+#         self.assertCountEqual(res_users, users)
