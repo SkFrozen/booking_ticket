@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
-from django.conf.global_settings import DATE_INPUT_FORMATS, STATICFILES_DIRS
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,19 +26,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy("
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy(",
 )
+# keys for Stripe service
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_ENDPOINT_SECRET = os.getenv("STRIPE_ENDPOINT_SECRET")
 
-STRIPE_PUBLIC_KEY = "pk_test_51QgLp6QYxjsOX5t4uc4RgQqGtXuoxRLeO9jrtSTqTFDMJPNFAW1IeOKHn5Ys7goSQUxjULCw19Om5wd4qtM3Psg000CMYOCwaj"
-STRIPE_SECRET_KEY = "sk_test_51QgLp6QYxjsOX5t4HCFYjHOWbP1mkKJIZ5OtRx3NyZbDkeSdXPyTDpACkra6XFDgLJuujp0QO5H3iUsjVJUXGDMg0029YkpVre"
-STRIPE_ENDPOINT_SECRET = (
-    "whsec_da94ea92c34b9b8033263adc11ec2cc7a332909ca41f08b1db4578fcadea8510"
-)
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.getenv("DEBUG", 0))
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*"]
 
 if DEBUG:
     LOGGING = {
@@ -113,21 +112,22 @@ AUTH_USER_MODEL = "users.User"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-PSG_USERNAME = os.getenv("PSG_USERNAME")
-PSG_PASSWORD = os.getenv("PSG_PASSWORD")
-PSG_HOST = os.getenv("PSG_HOST")
-PSG_PORT = os.getenv("PSG_PORT")
-PSG_DB = os.getenv("PSG_DB")
+DATABASE_USERNAME = os.getenv("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
+DATABASE_NAME = os.getenv("DATABASE_DB")
+DATABASE_ENGINE = os.getenv("DATABASE_ENGINE")
 
-if PSG_USERNAME:
+if DATABASE_NAME:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": PSG_DB,
-            "USER": PSG_USERNAME,
-            "PASSWORD": PSG_PASSWORD,
-            "HOST": PSG_HOST,
-            "PORT": PSG_PORT,
+            "ENGINE": f"django.db.backends.{DATABASE_ENGINE}",
+            "NAME": DATABASE_NAME,
+            "USER": DATABASE_USERNAME,
+            "PASSWORD": DATABASE_PASSWORD,
+            "HOST": DATABASE_HOST,
+            "PORT": DATABASE_PORT,
         }
     }
 else:
@@ -195,7 +195,10 @@ DATETIME_FORMAT = "d-m-Y H:M"
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+if bool(os.getenv("DJANGO_COLLECT_STATIC", 0)):
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+else:
+    STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
