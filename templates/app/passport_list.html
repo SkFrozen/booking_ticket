@@ -65,7 +65,7 @@
                     {% for row_number, seats in seats_map.economy.items %}
                     <div class="row_b economy-row">
                         {% for seat in seats %}
-                        <a href="#" class="seat btn p-0{% if seat.is_booked %} bg-danger disabled {% else %} bg-success {% endif %}" role="button" aria-disabled="true">
+                        <a href="" class="seat btn p-0{% if seat.is_booked %} bg-danger disabled {% else %} bg-success {% endif %}" role="button" aria-disabled="true">
                             <div data-seat="{{ seat.id }}">
                                 {{ seat.number }}
                             </div>

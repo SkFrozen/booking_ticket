@@ -25,7 +25,8 @@ const bookButton = document.querySelector(".book-trip");
 const bookForm = document.querySelector(".book-form");
 document.querySelectorAll(".seat").forEach(function (element) {
     // Mark seat as booked
-    element.addEventListener("click", function () {
+    element.addEventListener("click", function (e) {
+        e.preventDefault();
         element.classList.toggle("bg-secondary");
         element.classList.toggle("booked");
         element.classList.toggle("bg-success");
