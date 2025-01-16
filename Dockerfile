@@ -1,4 +1,4 @@
-FROM python:3.12.8-slim
+FROM python:3.12.8-alpine
 
 ENV PYTHONUNBBUFFERED=1
 
@@ -9,13 +9,18 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-RUN useradd -m -r appuser \
-    && chown -R appuser /app
+RUN addgroup -g 10001 user_app_group \
+    && adduser -D -h /app -u 10002 user_app user_app_group \
+    && chown -R user_app:user_app_group /app
 
-COPY --chown=appuser:appuser . /app/
+RUN mkdir -p /app/media
 
-USER appuser
+COPY . /app/
+
+RUN chown -R user_app:user_app_group /app
+
+USER user_app
 
 EXPOSE 8000
 
-CMD ["chmode", "+x", "run.sh"]
+RUN chmod +x run.sh

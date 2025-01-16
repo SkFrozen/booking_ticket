@@ -20,10 +20,10 @@
     </form>
     
 {% else %}
-    <form action="{% url 'book_seat' trip.id %}" method="post" class="d-flex flex-column align-items-center book-form">
+    <form action="{% url 'book_seat' trip.id %}" method="post" class="d-flex flex-column align-items-center book-form w-50">
         {% csrf_token %}
         {{ formset.management_form }}
-        <div id="forms-container" class="w-50">
+        <div id="forms-container">
             {% for form in formset %}
             <div class="passport-form m-auto">
                 <h2 class="text-center mt-4">Passport</h2>

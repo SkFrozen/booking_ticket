@@ -10,7 +10,7 @@
         {% for city in page_obj  %}
         <div class="container bd-highlight col-3">
             <div class="img">
-                <img src="{{ city.image.url }}" alt="img-fluid" class="img-thumbnail">
+                <img src="{% if city.image %} {{ city.image.url }} {% else %}https://dummyimage.com/300x200.png/99cccc{% endif %}" alt="img-fluid" class="img-thumbnail">
             </div>
             <a href="{% url 'trips_list' city.country.id city.id %}">{{ city.name }}</a>
         </div>

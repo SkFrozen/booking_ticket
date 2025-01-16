@@ -16,7 +16,7 @@
     {% for country in countries  %}
     <div class="container bd-highlight w-25">
         <div class="img">
-            <img src="{{ country.image.url }}" alt="img-fluid" class="img-thumbnail">
+            <img src="{% if country.image %} {{ country.image.url }} {% else %}https://dummyimage.com/300x200.png/99cccc{% endif %}" alt="img-fluid" class="img-thumbnail">
         </div>
         <a href="{% url 'cities_list' country.id %}">{{ country.name }}</a>
     </div>

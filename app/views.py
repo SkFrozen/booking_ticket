@@ -109,6 +109,11 @@ def booking_seat_view(
         formset = PassportFormSet(request.POST)
         if formset.is_valid():
             passports = formset.save(commit=False)
+        else:
+            passports = []
+            return HttpResponseBadRequest(
+                "<h1 style='color: red'>Error: All fields on the form must be completed</h1>"
+            )
 
     if len(seat_ids) != len(passports):
         return HttpResponseBadRequest(
@@ -270,5 +275,4 @@ class DirectionsView(ListView):
             countries = Country.objects.all()
             cache.set("countries", countries, 60 * 60)
             context = {"countries": countries, "search_form": form}
-
             return render(request, self.template_name, context)

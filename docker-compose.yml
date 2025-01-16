@@ -2,73 +2,114 @@ services:
 
   nginx:
     image: nginx:1.26.2-alpine
-
+    restart: always
     ports:
       - "8000:80"
-
     volumes:
-      - "./static:/var/www/static"
-      - "./media:/var/www/media"
-      - "./nginx/default.conf:/etc/nginx/nginx.conf"
-
+      - "./static:/usr/share/nginx/static"
+      - media:/usr/share/nginx/media
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
     depends_on:
       - backend-1
+    networks:
+      - nginx_network
 
   database:
     image: postgres:17.2-alpine
-
+    restart: always
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-
+      PGDATA: ${DATABASE_DATA}
+    env_file:
+      - .env
     ports:
-      - "127.0.0.1:5434:5432"
+      - "5433:5432"
     volumes:
-
       - "./postgres_data:/var/lib/postgresql/data"
-    env_file: .env
+    networks:
+      - database_network
 
   cache:
     image: redis:7.4-alpine
+    restart: always
+    networks:
+      - database_network
 
   backend-1:
     build: .
     image: booking_ticket:0.2
+    restart: always
     command: /bin/sh run.sh
-    env_file: .env
-
+    env_file:
+      - .env
     volumes:
       - "./static:/app/static"
-      - "./media:/app/media"
-
+      - media:/app/media
+      - shared_key:/shared
     depends_on:
       - database
       - broker
       - cache
+    networks:
+      - database_network
+      - nginx_network
 
   celery-worker-1:
-    image: booking_ticket:0.2
     build: .
+    image: booking_ticket:0.2
+    restart: always
     command: celery -A booking_ticket:celery_app worker -l INFO -n celery_worker_1
-    env_file: .env
-
+    env_file:
+      - .env
     depends_on:
       - database
       - cache
       - celery-backend
       - broker
+    networks:
+      - database_network
 
   celery-backend:
     image: redis:7.4-alpine
+    restart: always
+    networks:
+      - database_network
 
   broker:
     image: rabbitmq:3-management
-
+    restart: always
     ports:
       - "15672:15672"
       - "5672:5672"
-    env_file: .env
-
+    env_file:
+      - .env
     volumes:
-      - "./rabbitmq:/var/lib/rabbitmq"
+      - rabbitmq:/var/lib/rabbitmq
+    networks:
+      - database_network
+
+  stripe-cli:
+    image: "stripe/stripe-cli:latest"
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+    entrypoint: [ "/bin/sh", "-c", "/start_stripe.sh" ]
+    env_file:
+      - .env
+    volumes:
+      - "./start_stripe.sh:/start_stripe.sh"
+      - shared_key:/shared
+    networks:
+      - database_network
+
+networks:
+  database_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
+
+volumes:
+  shared_key:
+  media:
+  rabbitmq:

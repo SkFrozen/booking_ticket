@@ -31,12 +31,11 @@ SECRET_KEY = os.getenv(
     "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy(",
 )
 # keys for Stripe service
-STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
+STRIPE_ENDPOINT_SECRET = os.environ.get("STRIPE_ENDPOINT_SECRET")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-STRIPE_ENDPOINT_SECRET = os.getenv("STRIPE_ENDPOINT_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG", 0))
+DEBUG = bool(os.getenv("DJANGO_DEBUG", 0))
 
 ALLOWED_HOSTS = ["*"]
 
@@ -116,7 +115,7 @@ DATABASE_USERNAME = os.getenv("DATABASE_USERNAME")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 DATABASE_HOST = os.getenv("DATABASE_HOST")
 DATABASE_PORT = os.getenv("DATABASE_PORT")
-DATABASE_NAME = os.getenv("DATABASE_DB")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
 DATABASE_ENGINE = os.getenv("DATABASE_ENGINE")
 
 if DATABASE_NAME:
@@ -195,13 +194,15 @@ DATETIME_FORMAT = "d-m-Y H:M"
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-if bool(os.getenv("DJANGO_COLLECT_STATIC", 0)):
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+if os.getenv("DJANGO_COLLECT_STATIC", "0") == "1":
+    STATIC_ROOT = BASE_DIR / "static"
+
 else:
     STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

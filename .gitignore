@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # Environments
+.compose.env
 .env
 .venv
 env/
@@ -45,3 +46,5 @@ MANIFEST
 # Project
 postgres_data/
 rabbitmq/
+static/admin/
+static/flags/
