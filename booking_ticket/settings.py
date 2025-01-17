@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
-    "django-insecure-f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy(",
+    "f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy(",
 )
 # keys for Stripe service
 STRIPE_ENDPOINT_SECRET = os.environ.get("STRIPE_ENDPOINT_SECRET")
@@ -37,7 +37,7 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv("DJANGO_DEBUG", 0))
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1 localhost").split()
 
 if DEBUG:
     LOGGING = {
@@ -195,7 +195,7 @@ DATETIME_FORMAT = "d-m-Y H:M"
 
 STATIC_URL = "static/"
 if os.getenv("DJANGO_COLLECT_STATIC", "0") == "1":
-    STATIC_ROOT = BASE_DIR / "static"
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 else:
     STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
@@ -219,4 +219,4 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")

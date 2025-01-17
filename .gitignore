@@ -48,3 +48,4 @@ postgres_data/
 rabbitmq/
 static/admin/
 static/flags/
+media/
