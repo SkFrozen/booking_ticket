@@ -11,13 +11,15 @@
   <img src="https://www.vectorlogo.zone/logos/postgresql/postgresql-icon.svg" alt="rabbitmq" width="30" height="30"/>
 </div>
 
-### An application for booking plane tickets
+### An application for booking flights
 1. You can view a list of cities and destinations
 2. You can view a list of planes
 3. You can book flights
 4. You can download your tickets
 
-### Design
+## Application structure
+
+![img](img/app_structure.png)
 
 ## Installation
 
