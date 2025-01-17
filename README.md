@@ -21,20 +21,22 @@
 
 ## Installation
 
+### Stripe
+You will need to register with the [Stripe service](https://stripe.com/) and create a dashboard. Once you have created a dashboard, you can use the API secret key.
+
+![img](img/api_keys.png)
+
+
 ### Docker
 The most convenient and easiest way to launch a project is to use Docker Compose. 
 If you don't have it yet, you can download the latest version from 
 [the official website](https://github.com/docker/compose).
 
-1. You will need to register with the [Stripe service](https://stripe.com/) and create a dashboard. Once you have created a dashboard, you can use the API secret key.
-
-![img](img/api_keys.png)
-
-2. Copy the contents of the `example.env` file into the `.env` file, and then complete it with your own data.
+1. Copy the contents of the `example.env` file into the `.env` file, and then complete it with your own data.
 ```shell
 cp example.env .env
 ```
-3. Now you can run the containers.
+2. Now you can run the containers.
 ```shell
 docker compose build
 docker compose up -d
