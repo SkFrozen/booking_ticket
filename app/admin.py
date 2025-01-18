@@ -28,6 +28,7 @@ class BookingAdmin(admin.ModelAdmin):
         "passport",
         "created_at",
         "updated_at",
+        "payment",
     )
     list_filter = ("status",)
     search_fields = ("id", "passport__first_name", "created_at")

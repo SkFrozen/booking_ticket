@@ -32,7 +32,8 @@ def reject_booking_task(payment_id: int) -> None:
 
 @shared_task
 def send_ticket_to_user(payment_id: id, email: str) -> None:
-    payment = Payment.objects.get(pk=payment_id)
+    payment = Payment.objects.prefetch_related("booking").get(pk=payment_id)
+    print(payment)
     booking = payment.booking.all()
     tickets = []
     try:

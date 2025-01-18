@@ -56,7 +56,7 @@ class SeatAdmin(admin.ModelAdmin):
     list_per_page = 50
     search_fields = ("number", "price", "trip")
     ordering = ("trip",)
-    actions = ("mark_as_booked",)
+    actions = ("mark_as_booked", "mark_as_available",)
     
 
     def get_queryset(self, request):
@@ -67,6 +67,12 @@ class SeatAdmin(admin.ModelAdmin):
     def mark_as_booked(self, request, queryset):
         queryset.update(is_booked=True)
         self.message_user(request, "Seats marked as booked")
+    
+    @admin.action(description="mark as available")
+    def mark_as_available(self, request, queryset):
+        queryset.update(is_booked=False)
+        self.message_user(request, "Seats marked as available")
+        
 
 
 @admin.register(Company)

@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv(
     "f&0$qjvx4hqg=%jnhja#pr@za39eg4#*$r*&9nzb6^iob@cqy(",
 )
 # keys for Stripe service
-STRIPE_ENDPOINT_SECRET = os.environ.get("STRIPE_ENDPOINT_SECRET")
+STRIPE_ENDPOINT_SECRET = "whsec_da94ea92c34b9b8033263adc11ec2cc7a332909ca41f08b1db4578fcadea8510"  # os.environ.get("STRIPE_ENDPOINT_SECRET")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -51,7 +51,7 @@ if DEBUG:
         "loggers": {
             "django.db.backends": {
                 "handlers": ["console"],
-                "level": "DEBUG",
+                "level": "INFO",
             },
         },
     }

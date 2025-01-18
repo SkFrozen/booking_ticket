@@ -122,13 +122,13 @@ def booking_seat_view(
 
     trip = get_object_or_404(Trip, pk=trip_id)
     seats = Seat.objects.filter(id__in=seat_ids)
+    payment = Payment.objects.create()
     seat_passport = dict(zip(seat_ids, passports))
     info_book = {
         "cost": 0,
         "seats": len(seats),
         "trip": trip,
     }
-    bookings = []
 
     for seat, passport in seat_passport.items():
         if passport.id is None:
@@ -138,11 +138,7 @@ def booking_seat_view(
         info_book["cost"] += seat.price
         seat.is_booked = True
         seat.save()
-        booking = Booking(seat=seat, passport=passport)
-        booking.save()
-        bookings.append(booking)
-    payment = Payment.objects.create()
-    payment.booking.set(bookings)
+        Booking.objects.create(seat=seat, passport=passport, payment=payment)
     info_book["payment"] = payment
 
     return render(request, "app/success-booking.html", {"info_book": info_book})

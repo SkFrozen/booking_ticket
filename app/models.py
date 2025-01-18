@@ -13,7 +13,8 @@ class Passport(models.Model):
         ("female", "Female"),
     )
 
-    number = models.CharField(max_length=120)
+    email = models.EmailField()
+    number = models.CharField(max_length=120, unique=True)
     nationality = CountryField()
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -38,6 +39,19 @@ class Passport(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+class Payment(models.Model):
+    paid = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "payments"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.paid}"
+
+
 class Booking(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -51,6 +65,13 @@ class Booking(models.Model):
     status = models.CharField(max_length=8, choices=STATUS_CHOICES, default="pending")
     passport = models.ForeignKey(
         Passport, on_delete=models.CASCADE, related_name="booking"
+    )
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="booking",
     )
 
     class Meta:
@@ -78,16 +99,3 @@ class Booking(models.Model):
             "time_in": self.seat.trip.time_in,
         }
         return ticket
-
-
-class Payment(models.Model):
-    booking = models.ManyToManyField(Booking, related_name="payment")
-    paid = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "payments"
-        ordering = ["-created_at"]
-
-    def __str__(self) -> str:
-        return f"{self.paid} {self.booking}"
