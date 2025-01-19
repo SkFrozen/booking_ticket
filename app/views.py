@@ -15,7 +15,7 @@ from trips.models import Country, Seat, Trip
 from .forms import PassportForm, PassportFormSet
 from .models import Booking, Passport, Payment
 from .tasks import send_ticket_to_user
-from .utils import generate_items_for_payment, generate_seats_map
+from .utils import create_checkout_session, generate_seats_map
 
 
 @login_required
@@ -96,7 +96,7 @@ def booking_seat_view(
     Recieves a list of booked seats and passports
     Creates a booking for each seat and passport
     Generates information about the booking
-    Creates a payment
+    Creates a payment and a checkout session
     Displays a successful page with booking details
     """
     if request.method == "GET":
@@ -120,6 +120,9 @@ def booking_seat_view(
             "<h1 style='color: red'>Error: Incorrect number of seats</h1>"
         )
 
+    domain_url = request.build_absolute_uri("/")[:-1] + "/"
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
     trip = get_object_or_404(Trip, pk=trip_id)
     seats = Seat.objects.filter(id__in=seat_ids)
     payment = Payment.objects.create()
@@ -129,7 +132,6 @@ def booking_seat_view(
         "seats": len(seats),
         "trip": trip,
     }
-
     for seat, passport in seat_passport.items():
         if passport.id is None:
             passport.save()
@@ -138,41 +140,34 @@ def booking_seat_view(
         info_book["cost"] += seat.price
         seat.is_booked = True
         seat.save()
-        Booking.objects.create(seat=seat, passport=passport, payment=payment)
-    info_book["payment"] = payment
+        try:
+            Booking.objects.create(seat=seat, passport=passport, payment=payment)
+        except Exception:
+            return redirect("cancelled")
+
+    stripe_session_id = create_checkout_session(stripe, domain_url, seats, payment.id)
+    info_book["payment_id"] = payment.id
+    info_book["stripe_session_id"] = stripe_session_id
 
     return render(request, "app/success-booking.html", {"info_book": info_book})
 
 
 @csrf_exempt
-def payment_view(request: WSGIRequest, payment_id: int) -> HttpResponse:
+def payment_view(request: WSGIRequest, stripe_session_id: str) -> HttpResponse:
     """
     Generates a payment link using the Stripe service for the specified payment
-    Creates items(tickets) for the  Stripe dashboard
-    Creates checkout session for the payment
     Redirects the user to the payment page
     """
     if request.method == "POST":
-        domain_url = "http://127.0.0.1:8000/"
         stripe.api_key = settings.STRIPE_SECRET_KEY
-
         try:
-            items = generate_items_for_payment(stripe, payment_id)
-            checkout_session = stripe.checkout.Session.create(
-                success_url=domain_url
-                + f"success/{payment_id}"
-                + "?session_id={CHECKOUT_SESSION_}",
-                cancel_url=domain_url + "cancelled/",
-                payment_method_types=["card"],
-                metadata={"payment_id": payment_id},
-                mode="payment",
-                line_items=items,
-            )
-
+            checkout_session = stripe.checkout.Session.retrieve(stripe_session_id)
+            # stripe.checkout.Session.expire(stripe_session_id)
         except Exception as e:
-            return str(e)
+            return HttpResponseBadRequest(str(e))
 
         return redirect(checkout_session.url, code=303)
+    return HttpResponseBadRequest(status=400, content="The method is not allowed")
 
 
 class SuccessPaymentView(TemplateView):
@@ -208,14 +203,14 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
         # Invalid signature
         return HttpResponse(status=400)
 
+    print("from stripe_webhook: ", event["type"], event.data.object)
+
     if event["type"] == "checkout.session.completed":
         stripe_session = event.data.object
         assert isinstance(stripe_session, stripe.checkout.Session)
 
         try:
-            payment_id = (
-                event.get("data").get("object").get("metadata").get("payment_id")
-            )
+            payment_id = stripe_session.metadata.get("payment_id")
             payment = Payment.objects.get(pk=payment_id)
         except Payment.DoesNotExist:
             # if Payment does not exist payment will be refunded
@@ -224,7 +219,7 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
             stripe.Refund.create(payment_intent=payment_intent, amount=amount)
             return HttpResponse(status=200)
 
-        email = event["data"]["object"]["customer_details"]["email"]
+        email = stripe_session.customer_details.get("email")
         booking = payment.booking.all()
         payment.paid = True
         payment.save(update_fields=["paid"])

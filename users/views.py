@@ -71,18 +71,15 @@ def profile_view(request: WSGIRequest) -> HttpResponse:
     """
     user = request.user
     passports = Passport.objects.filter(owner=user).all()
-    bookings = (
-        Booking.objects.filter(passport__owner=user)
-        .select_related(
-            "passport",
-            "seat",
-            "seat__trip",
-            "seat__trip__departure_airport",
-            "seat__trip__arrival_airport",
-            "seat__trip__departure_airport__city",
-            "seat__trip__arrival_airport__city",
-        )
-        .prefetch_related("payment")
+    bookings = Booking.objects.filter(passport__owner=user).select_related(
+        "passport",
+        "seat",
+        "payment",
+        "seat__trip",
+        "seat__trip__departure_airport",
+        "seat__trip__arrival_airport",
+        "seat__trip__departure_airport__city",
+        "seat__trip__arrival_airport__city",
     )
 
     paginator = Paginator(bookings, 10)
@@ -109,7 +106,7 @@ def profile_view(request: WSGIRequest) -> HttpResponse:
                 "price": seat.price,
                 "status": booking.status,
                 "id": booking.id,
-                "payment_id": booking.payment.get().id,
+                "payment_id": booking.payment.id,
             }
         )
     context = {

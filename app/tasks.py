@@ -68,7 +68,7 @@ def send_email_task(
 
     if files is not None:
         for k, file in enumerate(files):
-            file_name = f"{file_name}_{k}.{file_ext}"
-            mail.attach(file_name, file, file_content)
+            ticket_name = f"{file_name}_{k}.{file_ext}"
+            mail.attach(ticket_name, file, file_content)
 
     mail.send()

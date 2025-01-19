@@ -36,7 +36,7 @@ urlpatterns = [
         booking_seat_view,
         name="book_seat",
     ),
-    path("booking/payment/<int:payment_id>", payment_view, name="payment"),
+    path("booking/payment/<str:stripe_session_id>/", payment_view, name="payment"),
     path(
         "success/<int:payment_id>/",
         SuccessPaymentView.as_view(),

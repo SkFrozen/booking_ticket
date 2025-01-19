@@ -9,4 +9,4 @@ from .tasks import reject_booking_task
 def post_save_booking(sender, instance, created, **kwargs):
 
     if created:
-        reject_booking_task.apply_async(args=[instance.id], countdown=60 * 20)
+        reject_booking_task.apply_async(args=[instance.id], countdown=60 * 31)
