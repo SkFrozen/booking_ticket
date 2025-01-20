@@ -8,3 +8,9 @@
 	border-radius: .25rem;
 	text-decoration: none;
 }
+
+.fixed-image-size {
+	width: 350px;
+	height: 250px;
+	object-fit: cover;
+}

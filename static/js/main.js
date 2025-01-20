@@ -61,3 +61,46 @@ function bookSeats(event) {
 
 
 }
+
+
+// Предположим, у вас есть время бронирования в переменной bookingTime
+const formPayment = document.querySelector(".nav-form");
+let bookingTime = document.querySelector("#bookingTime");
+let sessionId
+
+if (bookingTime != null) {
+    sessionId = bookingTime.getAttribute("data-session-id");
+    bookingTime = bookingTime.value;
+    localStorage.setItem('bookingTime', bookingTime);
+    localStorage.setItem('sessionId', sessionId);
+}
+function updateTimer() {
+    bookingTime = localStorage.getItem('bookingTime');
+    if (bookingTime) {
+        let bookingDate = + bookingTime;
+        let now = Math.floor(new Date() / 1000);
+        let elapsed = now - bookingDate
+        let remaining = 30 * 60 - elapsed;
+        let timer = document.getElementById('timer');
+        if (remaining > 0) {
+            let minutes = Math.floor(remaining / 60);
+            let seconds = Math.floor((remaining % 60));
+            timer.innerHTML = minutes + ' минут ' + seconds + ' секунд';
+        } else {
+            localStorage.removeItem("bookingTime")
+            localStorage.removeItem('sessionId');
+            timer.innerHTML = '';
+        }
+    } else {
+        formPayment.classList.add("opacity-0")
+    }
+}
+
+// Обновляем таймер каждую секунду
+if (localStorage.getItem('sessionId') != "") {
+    sessionId = localStorage.getItem('sessionId');
+    formPayment.classList.remove("opacity-0")
+    formPayment.setAttribute("action", `/booking/payment/${sessionId}/`);
+    setInterval(updateTimer, 1000);
+    updateTimer(); // Обновить таймер сразу после загрузки страницы
+}

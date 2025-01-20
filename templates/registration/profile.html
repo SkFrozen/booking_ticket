@@ -73,6 +73,7 @@
             {% else %}
             <div class="container d-flex justify-content-evenly">
                 <a href="{% url 'reject' booking.id %}" class="btn btn-danger w-25">Reject</a>
+                <a href="{% url 'download_ticket' booking.id %}" class="btn btn-success w-50">Load ticket</a>
             </div>
             {% endif %}
         </div>

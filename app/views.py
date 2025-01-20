@@ -1,10 +1,18 @@
+import time
+
 import stripe
 import stripe.error
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    FileResponse,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, TemplateView
@@ -15,7 +23,20 @@ from trips.models import Country, Seat, Trip
 from .forms import PassportForm, PassportFormSet
 from .models import Booking, Passport, Payment
 from .tasks import send_ticket_to_user
-from .utils import create_checkout_session, generate_seats_map
+from .utils import create_checkout_session, generate_seats_map, generate_ticket_pdf
+
+
+@login_required
+def ticket_download_view(request: WSGIRequest, booking_id: int) -> HttpResponse:
+    booking = Booking.objects.select_related("passport").get(pk=booking_id)
+    if request.user.id == booking.passport.owner.id:
+        ticket = generate_ticket_pdf(booking.ticket)
+        return FileResponse(
+            ticket,
+            as_attachment=True,
+            filename=f"ticket_{request.user.username}_{booking_id}.pdf",
+        )
+    return HttpResponseNotFound()
 
 
 @login_required
@@ -53,10 +74,9 @@ def passport_update_view(request: WSGIRequest, passport_id: int) -> HttpResponse
 
     passport = Passport.objects.get(pk=passport_id)
     if request.method == "POST":
-        form = PassportForm(request.POST)
+        form = PassportForm(request.POST, instance=passport)
         if form.is_valid():
-            cleaned_data = form.cleaned_data
-            Passport.objects.filter(pk=passport_id).update(**cleaned_data)
+            form.save()
             return redirect("profile")
     else:
         form = PassportForm(instance=passport)
@@ -107,19 +127,28 @@ def booking_seat_view(
     if request.method == "POST":
         seat_ids = request.POST.getlist("seat")
         formset = PassportFormSet(request.POST)
-        if formset.is_valid():
-            passports = formset.save(commit=False)
-        else:
-            passports = []
-            return HttpResponseBadRequest(
-                "<h1 style='color: red'>Error: All fields on the form must be completed</h1>"
-            )
+        passports = []
+        for k, form in enumerate(formset):
+            number = form.data.get(f"form-{k}-number")
+            first_name = form.data.get(f"form-{k}-first_name")
+            last_name = form.data.get(f"form-{k}-last_name")
+            passport = Passport.objects.filter(
+                number=number, first_name=first_name, last_name=last_name
+            ).first()
+
+            if passport is None:
+                if form.is_valid():
+                    passport = form.save()
+                else:
+                    return HttpResponseBadRequest(
+                        "<h1 style='color: red'>Error: Check the entered data</h1>"
+                    )
+            passports.append(passport)
 
     if len(seat_ids) != len(passports):
         return HttpResponseBadRequest(
             "<h1 style='color: red'>Error: Incorrect number of seats</h1>"
         )
-
     domain_url = request.build_absolute_uri("/")[:-1] + "/"
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -148,7 +177,7 @@ def booking_seat_view(
     stripe_session_id = create_checkout_session(stripe, domain_url, seats, payment.id)
     info_book["payment_id"] = payment.id
     info_book["stripe_session_id"] = stripe_session_id
-
+    info_book["time"] = str(int(time.time()))
     return render(request, "app/success-booking.html", {"info_book": info_book})
 
 
@@ -162,7 +191,6 @@ def payment_view(request: WSGIRequest, stripe_session_id: str) -> HttpResponse:
         stripe.api_key = settings.STRIPE_SECRET_KEY
         try:
             checkout_session = stripe.checkout.Session.retrieve(stripe_session_id)
-            # stripe.checkout.Session.expire(stripe_session_id)
         except Exception as e:
             return HttpResponseBadRequest(str(e))
 
@@ -203,8 +231,6 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
         # Invalid signature
         return HttpResponse(status=400)
 
-    print("from stripe_webhook: ", event["type"], event.data.object)
-
     if event["type"] == "checkout.session.completed":
         stripe_session = event.data.object
         assert isinstance(stripe_session, stripe.checkout.Session)
@@ -228,6 +254,10 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
             book.save(update_fields=["status"])
 
         send_ticket_to_user.delay(payment_id, email)
+    elif event["type"] == "checkout.session.expired":
+        stripe_session = event.data.object
+        assert isinstance(stripe_session, stripe.checkout.Session)
+        print("from webhook: session expire")
 
     return HttpResponse(status=200)
 

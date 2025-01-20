@@ -8,7 +8,7 @@ from reportlab.pdfgen import canvas
 from trips.models import Seat
 
 
-def generate_ticket_pdf(data: dict) -> bytes:
+def generate_ticket_pdf(data: dict) -> BytesIO:
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     c.drawString(100, 750, f"Seat: {data["seat"]}")
@@ -19,9 +19,10 @@ def generate_ticket_pdf(data: dict) -> bytes:
     c.drawString(100, 625, f"Airport: {data["airport_to"]}")
     c.drawString(100, 600, f"Time out: {data["time_out"]:%m/%d/%Y %H:%M}")
     c.drawString(100, 575, f"Time in: {data["time_in"]:%m/%d/%Y %H:%M}")
+    c.showPage()
     c.save()
     buffer.seek(0)
-    return buffer.getvalue()
+    return buffer
 
 def generate_seats_map(seats: list) ->dict:
     seat_map = {'business': {}, 'economy': {}} 

@@ -2,9 +2,8 @@ from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMessage
-from requests import delete
 
-from .models import Booking, Payment
+from .models import Payment
 from .utils import generate_ticket_pdf
 
 User = get_user_model()
@@ -33,12 +32,11 @@ def reject_booking_task(payment_id: int) -> None:
 @shared_task
 def send_ticket_to_user(payment_id: id, email: str) -> None:
     payment = Payment.objects.prefetch_related("booking").get(pk=payment_id)
-    print(payment)
     booking = payment.booking.all()
     tickets = []
     try:
         for book in booking:
-            ticket = generate_ticket_pdf(book.ticket)
+            ticket = generate_ticket_pdf(book.ticket).getvalue()
             tickets.append(ticket)
         subject = "Here is your ticket!"
         message = f"Hello. You can download and print the ticket"

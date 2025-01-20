@@ -12,15 +12,14 @@
         <button type=submit class="btn btn-primary h-25 ms-2 mb-3">Search</button>
     </form>
 </div>
-<div class="container d-flex justify-content-around">
+<div class="row row-cols-3 w-75 m-auto gap-3 justify-content-center">
     {% for country in countries  %}
-    <div class="container bd-highlight w-25">
+    <div class="col-3">
         <div class="img">
-            <img src="{% if country.image %} {{ country.image.url }} {% else %}https://dummyimage.com/300x200.png/99cccc{% endif %}" alt="img-fluid" class="img-thumbnail">
+            <img src="{% if country.image %} {{ country.image.url }} {% else %}https://dummyimage.com/300x200.png/99cccc{% endif %}" alt="img-fluid" class="fixed-image-size">
         </div>
         <a href="{% url 'cities_list' country.id %}">{{ country.name }}</a>
     </div>
     {% endfor %}
 </div>
-
 {% endblock content %}

@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container text-center">
+    <input type="hidden" name="booking-time" value="" id="bookingTime" data-session-id="">
     {% if payment %}
         <h1>Your payment succeeded. We have sent the ticket to your email</h1>
     {% else %}

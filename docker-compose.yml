@@ -7,7 +7,7 @@ services:
       - "8000:80"
     volumes:
       - "./static:/usr/share/nginx/static"
-      - media:/usr/share/nginx/media
+      - "./media:/usr/share/nginx/media"
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
     depends_on:
       - backend-1
@@ -46,7 +46,7 @@ services:
       - .env
     volumes:
       - "./static:/app/static"
-      - media:/app/media
+      - "./media:/app/media"
       - shared_key:/shared
     depends_on:
       - database
@@ -111,5 +111,4 @@ networks:
 
 volumes:
   shared_key:
-  media:
   rabbitmq:

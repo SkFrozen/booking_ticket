@@ -12,7 +12,7 @@
         <p>Trip: {{ info_book.trip }}</p>
         <p>Total price: {{ info_book.cost }}</p>
         <p>Total seats: {{ info_book.seats }}</p>
-
+        <input type="hidden" name="booking-time" value="{{ info_book.time }}" id="bookingTime" data-session-id="{{ info_book.stripe_session_id  }}">
     </div>
     <form method="post" action="{% url 'payment' info_book.stripe_session_id %}">
         {% csrf_token %}
