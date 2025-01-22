@@ -14,3 +14,14 @@
 	height: 250px;
 	object-fit: cover;
 }
+
+.image-logo {
+	width: 75px;
+	height: 75px;
+	float: right;
+	padding: .25rem;
+	background-color: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 50%;
+	object-fit: cover;
+}

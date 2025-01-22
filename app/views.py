@@ -129,6 +129,9 @@ def booking_seat_view(
         formset = PassportFormSet(request.POST)
         passports = []
         for k, form in enumerate(formset):
+            delete: str | None = form.data.get(f"form-{k}-DELETE")
+            if delete:
+                continue
             number = form.data.get(f"form-{k}-number")
             first_name = form.data.get(f"form-{k}-first_name")
             last_name = form.data.get(f"form-{k}-last_name")
