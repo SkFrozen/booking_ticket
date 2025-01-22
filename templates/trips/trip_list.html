@@ -11,7 +11,7 @@
     {% for trip in page_obj %}
     
     <div class="col">
-        <a href="{% url 'add_passport' trip.id %}" class="text-decoration-none text-white">
+        <a href="{% url 'passports_list' trip.id %}" class="text-decoration-none text-white">
             <div class="border p-2 bg-secondary rounded-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>Price: {{ trip.plane.economy_class_price }}</div>

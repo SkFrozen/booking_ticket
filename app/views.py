@@ -54,7 +54,7 @@ def passport_create_view(
             for passport in passports:
                 passport.owner = request.user
                 passport.save()
-            return redirect("add_passport", trip_id)
+            return redirect("passports_list", trip_id)
     else:
         formset = PassportFormSet(queryset=Passport.objects.none())
 
@@ -151,7 +151,6 @@ def booking_seat_view(
         )
     domain_url = request.build_absolute_uri("/")[:-1] + "/"
     stripe.api_key = settings.STRIPE_SECRET_KEY
-
     trip = get_object_or_404(Trip, pk=trip_id)
     seats = Seat.objects.filter(id__in=seat_ids)
     payment = Payment.objects.create()
@@ -257,7 +256,6 @@ def stripe_webhook(request: WSGIRequest) -> HttpResponse:
     elif event["type"] == "checkout.session.expired":
         stripe_session = event.data.object
         assert isinstance(stripe_session, stripe.checkout.Session)
-        print("from webhook: session expire")
 
     return HttpResponse(status=200)
 
@@ -287,12 +285,10 @@ class DirectionsView(ListView):
     def get(self, request: WSGIRequest) -> HttpResponse:
         form = TripSearchForm()
         if cache.get("countries"):
-            print("cache")
             context = {"countries": cache.get("countries"), "search_form": form}
 
             return render(request, self.template_name, context)
         else:
-            print("miss cache")
             countries = Country.objects.all()
             cache.set("countries", countries, 60 * 60)
             context = {"countries": countries, "search_form": form}

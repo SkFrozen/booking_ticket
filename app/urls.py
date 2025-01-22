@@ -31,7 +31,7 @@ urlpatterns = [
     path(
         "booking/passport/<int:trip_id>/",
         booking_passports_view,
-        name="add_passport",
+        name="passports_list",
     ),
     path(
         "booking/<int:trip_id>/seats/",

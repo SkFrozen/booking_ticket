@@ -5,8 +5,8 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlencode, urlsafe_base64_encode
 
-from app.models import Booking
-from trips.models import Company, Country, Seat, Trip
+from app.models import Booking, Passport, Payment
+from trips.models import Airport, City, Company, Country, Plane, Seat, Trip
 
 from ..models import User
 
@@ -62,46 +62,82 @@ class TestRegisterViews(TestCase):
         self.assertRedirects(response, reverse("login"))
 
 
-# class TestProfileView(TestCase):
+class TestProfileView(TestCase):
 
-#     @classmethod
-#     def setUpTestData(cls) -> None:
-#         cls.client = Client()
-#         cls.url = reverse("profile")
-#         cls.user = User.objects.create_user(
-#             username="test",
-#             email="test@test.com",
-#             password="test",
-#             date_of_birth="1990-03-20",
-#         )
-#         cls.company = Company.objects.create(name="test_company")
-#         cls.country = Country.objects.create(name="test_country")
-#         cls.trip = Trip.objects.create(
-#             town_from="test_town_from",
-#             town_to="test_town_to",
-#             time_out=timezone.now() + timezone.timedelta(days=5),
-#             time_in=timezone.now() - timezone.timedelta(days=5, hours=5),
-#             airport="test_airport",
-#             plane="test_plane",
-#             company=cls.company,
-#             country=cls.country,
-#         )
-#         cls.seats = [
-#             Seat.objects.create(price=100, trip=cls.trip, number=i, is_booked=True)
-#             for i in range(5)
-#         ]
-#         cls.booking = [
-#             Booking.objects.create(user=cls.user, trip=cls.trip, seat=seat)
-#             for seat in cls.seats
-#         ]
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.client = Client()
+        cls.url = reverse("profile")
+        cls.user = User.objects.create_user(
+            username="test",
+            email="test@test.com",
+            password="test",
+            date_of_birth="1990-03-20",
+        )
+        cls.company = Company.objects.create(name="test_company", code="TC")
+        cls.country = Country.objects.create(name="test_country")
+        cls.city = City.objects.create(name="test_city", country=cls.country)
+        cls.airport = Airport.objects.create(name="test_airport", city=cls.city)
+        cls.plane = Plane.objects.create(
+            model="test_plane",
+            seat_configuration={
+                "business_rows": 2,
+                "business_seats_per_row": 4,
+                "economy_rows": 2,
+                "economy_seats_per_row": 4,
+            },
+            business_class_price=250,
+            economy_class_price=150,
+        )
+        cls.trip = Trip.objects.create(
+            number="TC-6563",
+            time_out=timezone.now() + timezone.timedelta(days=1),
+            time_in=timezone.now() + timezone.timedelta(days=1, hours=5),
+            departure_airport=cls.airport,
+            arrival_airport=cls.airport,
+            plane=cls.plane,
+            company=cls.company,
+        )
+        cls.seat = Seat.objects.create(
+            number="A10",
+            trip=cls.trip,
+            is_booked=True,
+            price=150,
+            seat_class="economy",
+        )
+        cls.passport = Passport.objects.create(
+            email="test@test.com",
+            number="123456789",
+            nationality="BY",
+            date_of_birth="1990-03-20",
+            sex="male",
+            first_name="test",
+            last_name="test_last",
+            owner=cls.user,
+        )
+        cls.payment = Payment.objects.create()
+        cls.booking = Booking.objects.create(
+            seat=cls.seat, passport=cls.passport, payment=cls.payment
+        )
 
-#     def test_profile_view(self) -> None:
-#         self.client.force_login(self.user)
-#         response = self.client.get(self.url)
+    def test_profile_view(self) -> None:
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        passports = response.context[0]["passports"]
+        bookings = response.context[0]["bookings"]
 
-#         res_users = [book.user for book in response.context[0].get("bookings")]
-#         users = [book.user for book in self.booking]
-
-#         self.assertEqual(response.status_code, 200)
-#         self.assertTemplateUsed(response, "registration/profile.html")
-#         self.assertCountEqual(res_users, users)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(passports), 1)
+        self.assertEqual(len(bookings), 1)
+        self.assertEqual(passports[0], self.passport)
+        self.assertEqual(passports[0].owner, self.user)
+        self.assertEqual(bookings[0]["trip_number"], "TC-6563")
+        self.assertEqual(bookings[0]["departure_city"], "test_city")
+        self.assertEqual(bookings[0]["arrival_city"], "test_city")
+        self.assertEqual(bookings[0]["departure_airport"], "test_airport")
+        self.assertEqual(bookings[0]["arrival_airport"], "test_airport")
+        self.assertEqual(bookings[0]["first_name"], "test")
+        self.assertEqual(bookings[0]["last_name"], "test_last")
+        self.assertEqual(bookings[0]["seat_number"], "A10")
+        self.assertEqual(bookings[0]["price"], 150)
+        self.assertEqual(bookings[0]["status"], "pending")

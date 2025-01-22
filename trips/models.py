@@ -93,7 +93,7 @@ class Plane(models.Model):
 
         business_rows = config.get("business_rows", 0)
         business_seats_per_row = config.get("business_seats_per_row", 0)
-        economy_rows = config.get("economy_rows", 0)
+        economy_rows = config.get("economy_rows", 0) + business_rows
         economy_seats_per_row = config.get("economy_seats_per_row", 0)
 
         for row in range(1, business_rows + 1):

@@ -62,7 +62,7 @@ def trips_list_by_town_view(
 
     return render(
         request,
-        "trips/trip-list.html",
+        "trips/trip_list.html",
         context,
     )
 
@@ -97,6 +97,6 @@ def trips_search_list_view(request: WSGIRequest) -> HttpResponse:
             .order_by("-time_out")
         )
         context = {"page_obj": trips}
-        return render(request, "trips/trip-list.html", context)
+        return render(request, "trips/trip_list.html", context)
     else:
         return redirect("directions")
